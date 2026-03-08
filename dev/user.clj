@@ -39,5 +39,14 @@
   ;; Extract curves
   (pricing/price-curves resp)
 
-  ;; Look at first interval's components
-  (-> resp pricing/price-curves first :priceDetails first pricing/component-prices))
+  ;; Look at first interval's components (raw)
+  (-> resp pricing/raw-curves first :priceDetails first)
+
+  ;; Coerced Clojure-friendly curves
+  (pricing/curves resp)
+
+  ;; First coerced interval
+  (-> resp pricing/curves first :gridx.curve/intervals first)
+
+  ;; Access raw data via metadata
+  (-> resp pricing/curves first meta :gridx/raw))
