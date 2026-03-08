@@ -27,7 +27,14 @@ The OpenAPI spec is not bundled in this repo. It is symlinked from the sibling `
 resources/gridx-pricing-spec -> ../../gridx-api-specs/apis/pricing
 ```
 
-You must clone `gridx-api-specs` alongside this repo:
+You must clone [`gridx-api-specs`](https://github.com/grid-coordination/gridx-api-specs) alongside this repo:
+
+```bash
+cd repo/
+git clone git@github.com:grid-coordination/gridx-api-specs.git
+```
+
+Expected layout:
 
 ```
 repo/
