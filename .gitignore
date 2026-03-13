@@ -5,6 +5,3 @@ target/
 *.pom.asc
 pom.xml
 pom.xml.asc
-
-# Shadow repo symlinks (Claude Code + beads)
-.claude
