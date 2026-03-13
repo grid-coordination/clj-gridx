@@ -5,93 +5,17 @@
   - Raw: camelCase keys, string values — direct from the API JSON.
   - Coerced: namespaced keywords, BigDecimals, OffsetDateTimes — Clojure-friendly.
 
-  The coerced layer preserves raw data as metadata via :gridx/raw."
+  The coerced layer preserves raw data as metadata via :gridx/raw.
+
+  Schemas are in separate namespaces for consumer use:
+  - `gridx.pricing.schema`     — coerced entity schemas (Component, Interval, Curve)
+  - `gridx.pricing.schema.raw` — raw API response schemas"
   (:require [tick.core :as t]
             [tick.alpha.interval :as t.i]
-            [malli.core :as m])
+            [malli.core :as m]
+            [gridx.pricing.schema.raw :as schema.raw])
   (:import [java.time Duration Instant OffsetDateTime]
            [java.time.format DateTimeFormatter]))
-
-;; ---------------------------------------------------------------------------
-;; Raw API schemas (camelCase, strings — mirrors JSON)
-;; ---------------------------------------------------------------------------
-
-(def RawPriceComponent
-  [:map
-   [:component [:enum "cld" "mec" "mgcc"]]
-   [:intervalPrice :string]
-   [:priceType [:enum "generation" "distribution"]]])
-
-(def RawPriceDetail
-  [:map
-   [:startIntervalTimeStamp :string]
-   [:intervalPrice :string]
-   [:priceStatus :string]
-   [:priceComponents [:vector RawPriceComponent]]])
-
-(def RawPriceHeader
-  [:map
-   [:priceCurveName :string]
-   [:marketName :string]
-   [:intervalLengthInMinutes [:enum 15 60]]
-   [:settlementCurrency :string]
-   [:settlementUnit :string]
-   [:startTime :string]
-   [:endTime :string]
-   [:recordCount :int]])
-
-(def RawPriceCurve
-  [:map
-   [:priceHeader RawPriceHeader]
-   [:priceDetails [:vector RawPriceDetail]]])
-
-(def RawResponseMeta
-  [:map
-   [:code :int]
-   [:requestURL [:maybe :string]]
-   [:requestBody :string]
-   [:response :string]])
-
-(def RawPricingResponse
-  [:map
-   [:meta RawResponseMeta]
-   [:data [:vector RawPriceCurve]]])
-
-;; ---------------------------------------------------------------------------
-;; Coerced entity schemas (namespaced keywords, native types)
-;; ---------------------------------------------------------------------------
-
-(def Component
-  [:map
-   [:gridx.component/name [:enum :gridx.component/cld
-                           :gridx.component/mec
-                           :gridx.component/mgcc]]
-   [:gridx.component/price decimal?]
-   [:gridx.component/type [:enum :gridx.price-type/generation
-                           :gridx.price-type/distribution]]])
-
-(def Interval
-  [:map
-   [:gridx.interval/period [:map
-                            [:tick/beginning inst?]
-                            [:tick/end inst?]]]
-   [:gridx.interval/price decimal?]
-   [:gridx.interval/status [:enum :gridx.status/final
-                            :gridx.status/preliminary]]
-   [:gridx.interval/components [:vector Component]]])
-
-(def Curve
-  [:map
-   [:gridx.curve/name :string]
-   [:gridx.curve/market :keyword]
-   [:gridx.curve/interval-minutes [:enum 15 60]]
-   [:gridx.curve/currency :keyword]
-   [:gridx.curve/unit :keyword]
-   [:gridx.curve/start [:fn (fn [x] (instance? OffsetDateTime x))]]
-   [:gridx.curve/end [:fn (fn [x] (instance? OffsetDateTime x))]]
-   [:gridx.curve/period [:map [:tick/beginning inst?] [:tick/end inst?]]]
-   [:gridx.curve/record-count :int]
-   [:gridx.curve/intervals [:vector Interval]]])
 
 ;; ---------------------------------------------------------------------------
 ;; Parsing helpers
@@ -158,7 +82,7 @@
   Returns nil on success, or a Malli explanation map on failure.
   Operates on the :body of the HTTP response, not the full response."
   [body]
-  (m/explain RawPricingResponse body))
+  (m/explain schema.raw/PricingResponse body))
 
 ;; ---------------------------------------------------------------------------
 ;; Coercion: raw → Clojure entities

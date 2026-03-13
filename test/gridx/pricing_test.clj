@@ -3,35 +3,25 @@
             [clojure.java.io :as io]
             [clojure.data.json :as json]
             [gridx.pricing :as pricing]
+            [gridx.pricing.schema :as schema]
+            [gridx.pricing.schema.raw :as schema.raw]
             [malli.core :as m]))
 
-(def sample-response
+(def sample-body
   (-> (io/resource "gridx-pricing-spec/examples/pge-pricing-response-sample.json")
       slurp
       (json/read-str :key-fn keyword)))
 
-(deftest schema-validation-test
-  (testing "Sample response validates against Malli schema"
-    (is (nil? (pricing/validate-response sample-response)))))
+(deftest raw-schema-validation-test
+  (testing "Sample response body validates against raw Malli schema"
+    (is (nil? (pricing/validate-raw sample-body)))))
 
-(deftest price-extraction-test
-  (testing "Extract price curves from sample"
-    (let [curves (get sample-response :data)]
+(deftest raw-extraction-test
+  (testing "Extract raw price curves from sample"
+    (let [curves (:data sample-body)]
       (is (= 1 (count curves)))
       (is (= "PGE-CalFUSE-EELEC-SECONDARY"
-             (get-in (first curves) [:priceHeader :priceCurveName])))))
-
-  (testing "Component price extraction"
-    (let [detail (-> sample-response :data first :priceDetails first)
-          components (pricing/component-prices detail)]
-      (is (= #{:mec :mgcc :cld} (set (keys components))))
-      (is (every? #(instance? BigDecimal %) (vals components)))))
-
-  (testing "Total price parsing"
-    (let [detail (-> sample-response :data first :priceDetails first)
-          total  (pricing/total-price detail)]
-      (is (instance? BigDecimal total))
-      (is (pos? total)))))
+             (get-in (first curves) [:priceHeader :priceCurveName]))))))
 
 (deftest date-format-test
   (testing "Date formatting for GridX API"

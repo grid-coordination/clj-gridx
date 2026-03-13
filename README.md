@@ -49,7 +49,8 @@ repo/
 
 ```clojure
 (require '[gridx.client :as client]
-         '[gridx.pricing :as pricing])
+         '[gridx.pricing :as pricing]
+         '[gridx.pricing.schema :as schema])       ;; coerced entity schemas
 
 ;; Create a client (defaults to stage API)
 (def c (client/create-client))
@@ -227,17 +228,36 @@ interval
 
 This works at every level — curves, intervals, and components all carry their raw data.
 
-## Validation
+## Schemas
 
-Malli schemas are provided for both layers. Validate a raw API response body:
+Malli schemas are published in dedicated namespaces so consumers can use them for validation, generative testing, or documentation without pulling in coercion machinery.
+
+### `gridx.pricing.schema` — Coerced entities (the public contract)
 
 ```clojure
-(pricing/validate-raw (:body resp))
-;=> nil  (success)
+(require '[gridx.pricing.schema :as schema]
+         '[malli.core :as m])
 
-;; On validation failure, returns a Malli explanation map
-(pricing/validate-raw {:bad "data"})
-;=> {:errors [...], :schema [...], ...}
+;; Validate a coerced curve
+(m/validate schema/Curve (first curves))
+;=> true
+
+;; Available schemas: Component, Interval, Curve
+```
+
+### `gridx.pricing.schema.raw` — Raw API shapes
+
+Most consumers won't need these. They mirror the JSON exactly and are primarily useful for boundary validation.
+
+```clojure
+(require '[gridx.pricing.schema.raw :as schema.raw])
+
+;; Validate a raw API response body
+(pricing/validate-raw (:body resp))
+;=> nil  (success — returns nil on valid, Malli explanation map on failure)
+
+;; Available schemas: PriceComponent, PriceDetail, PriceHeader,
+;;                    PriceCurve, ResponseMeta, PricingResponse
 ```
 
 ## API Reference
@@ -265,6 +285,29 @@ Malli schemas are provided for both layers. Validate a raw API response body:
 | `->interval` | Coerce a raw price detail map (requires duration) |
 | `->curve` | Coerce a raw price curve map |
 
+### `gridx.pricing.schema`
+
+Malli schemas for the coerced Clojure entities — the public contract for consumers.
+
+| Schema | Description |
+|--------|-------------|
+| `Component` | Price component (cld/mec/mgcc) with BigDecimal price and type |
+| `Interval` | Price interval with tick period, price, status, and components |
+| `Curve` | Complete price curve with header fields and vector of intervals |
+
+### `gridx.pricing.schema.raw`
+
+Malli schemas mirroring the raw JSON API shape. Primarily for boundary validation.
+
+| Schema | Description |
+|--------|-------------|
+| `PriceComponent` | Raw component (`component`, `intervalPrice`, `priceType`) |
+| `PriceDetail` | Raw interval detail with timestamp, price, status, components |
+| `PriceHeader` | Raw curve metadata (name, market, times, record count) |
+| `PriceCurve` | Raw curve (header + details vector) |
+| `ResponseMeta` | HTTP response metadata (code, URLs, body) |
+| `PricingResponse` | Top-level API response (meta + data vector) |
+
 ## REPL Session Example
 
 A complete REPL session demonstrating the full workflow:
@@ -273,8 +316,10 @@ A complete REPL session demonstrating the full workflow:
 ;; Setup
 (require '[gridx.client :as client]
          '[gridx.pricing :as pricing]
+         '[gridx.pricing.schema :as schema]
          '[tick.core :as t]
-         '[tick.alpha.interval :as t.i])
+         '[tick.alpha.interval :as t.i]
+         '[malli.core :as m])
 
 (def c (client/create-client))
 
@@ -294,6 +339,10 @@ A complete REPL session demonstrating the full workflow:
 ;; Coerce to Clojure entities
 (def curves (pricing/curves resp))
 (def curve (first curves))
+
+;; Validate against published schemas
+(m/validate schema/Curve curve)
+;=> true
 
 ;; Inspect the curve header
 (dissoc curve :gridx.curve/intervals)

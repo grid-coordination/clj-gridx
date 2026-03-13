@@ -219,15 +219,27 @@ For pure JSON→EDN responses with no lazy navigation, the metadata convention a
 
 [deft](https://github.com/sstraust/deft) provides `defrecord`-like constructors backed by plain maps + Malli schemas + multimethod dispatch. Consider when entities need **behavioral polymorphism** (protocol implementations, multimethod dispatch). Skip for pure data entities.
 
+## Namespace Organization
+
+Put schemas in their own namespaces, separate from coercion logic. Consumers can depend on schemas for validation, generative testing, or documentation without pulling in the transformation machinery.
+
+```
+mylib.pricing              ;; coercion functions, API helpers
+mylib.pricing.schema       ;; coerced entity schemas (the public contract)
+mylib.pricing.schema.raw   ;; raw API schemas (boundary validation)
+```
+
+Most consumers only need the coerced schemas. The raw schemas are an implementation detail — useful at the boundary but rarely needed by downstream code.
+
 ## Checklist for Applying This Pattern
 
-1. **Define raw Malli schemas** mirroring the JSON shape
+1. **Define raw Malli schemas** mirroring the JSON shape (in `schema.raw` namespace)
 2. **Write coercion functions** (`->entity`) that:
    - Convert strings to native types (Instant, BigDecimal, keywords)
    - Use namespaced keywords
    - Compute derived values
    - Attach `{:ns/raw original}` metadata
-3. **Define coerced Malli schemas** for the nice entities
+3. **Define coerced Malli schemas** for the nice entities (in `schema` namespace)
 4. **Provide both layers**: `raw-things` for the raw data, `things` for coerced
 5. **Keep raw accessor functions** (success?, validate-raw) — the raw layer never goes away
 6. **Use Instant for time** — parse offsets/zones, store UTC
