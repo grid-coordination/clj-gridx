@@ -422,4 +422,4 @@ clojure -M:test -m kaocha.runner
 
 ## License
 
-Copyright (c) 2026. All rights reserved.
+[MIT License](LICENSE) — Copyright (c) 2026 Clark Communications Corporation
