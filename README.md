@@ -1,10 +1,10 @@
 # clj-gridx
 
-A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), providing access to marginal cost pricing data for California utilities.
+A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), providing access to marginal cost pricing data for California utilities. Built on a [non-official OpenAPI spec](https://github.com/grid-coordination/gridx-api-specs#disclaimer) derived from GridX's public developer docs.
 
 ## Features
 
-- **Spec-driven HTTP client** built on [Martian](https://github.com/oliyh/martian) with the OpenAPI spec (from `gridx-api-specs`) as the single source of truth
+- **Spec-driven HTTP client** built on [Martian](https://github.com/oliyh/martian) with the bundled OpenAPI spec as the single source of truth
 - **Two-layer data model**: raw API responses (camelCase, strings) and coerced Clojure entities (namespaced keywords, BigDecimals, Instants)
 - **tick intervals** for time periods, enabling [Allen's interval algebra](https://en.wikipedia.org/wiki/Allen%27s_interval_algebra) out of the box
 - **Metadata preservation**: every coerced entity carries the original API data as `:gridx/raw` metadata
@@ -17,32 +17,6 @@ Add to your `deps.edn`:
 ```clojure
 ;; TODO: publish coordinates once deployed
 {:deps {com.example/clj-gridx {:mvn/version "0.1.0"}}}
-```
-
-## Prerequisites
-
-The OpenAPI spec is not bundled in this repo. It is symlinked from the sibling `gridx-api-specs` repository:
-
-```
-resources/gridx-pricing-spec -> ../../gridx-api-specs/apis/pricing
-```
-
-You must clone [`gridx-api-specs`](https://github.com/grid-coordination/gridx-api-specs) alongside this repo:
-
-```bash
-cd repo/
-git clone git@github.com:grid-coordination/gridx-api-specs.git
-```
-
-Expected layout:
-
-```
-repo/
-  clj-gridx/           # this repo
-  gridx-api-specs/     # OpenAPI specs
-    apis/
-      pricing/
-        openapi.yaml
 ```
 
 ## Quick Start

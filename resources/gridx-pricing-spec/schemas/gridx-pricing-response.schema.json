@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gridx-pricing-response.schema.json",
+  "title": "GridX Pricing API Response",
+  "description": "Top-level response envelope from the GridX GET /v1/getPricing endpoint.",
+  "type": "object",
+  "required": ["meta", "data"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["code", "requestURL", "requestBody", "response"],
+      "properties": {
+        "code": {
+          "type": "integer",
+          "description": "HTTP-like status code (200 for success, 400 for errors)."
+        },
+        "requestURL": {
+          "type": ["string", "null"],
+          "description": "The internal URL the request was routed to. May be null on error."
+        },
+        "requestBody": {
+          "type": "string",
+          "description": "JSON string echo of the parsed query parameters."
+        },
+        "response": {
+          "type": "string",
+          "description": "Human-readable response message (e.g. 'Request succeeded')."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Response metadata."
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["priceHeader", "priceDetails"],
+        "properties": {
+          "priceHeader": {
+            "$ref": "gridx-price-header.schema.json"
+          },
+          "priceDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "gridx-price-detail.schema.json"
+            },
+            "description": "Array of price intervals for this day."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Array of daily price curves. One entry per day in the requested date range."
+    }
+  },
+  "additionalProperties": false
+}

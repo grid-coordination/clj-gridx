@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gridx-enums.schema.json",
+  "title": "GridX Pricing API Enumerations",
+  "description": "Consolidated enum definitions for the GridX Pricing API.",
+  "$defs": {
+    "utility": {
+      "type": "string",
+      "enum": ["PGE"],
+      "description": "Utility partner name."
+    },
+    "market": {
+      "type": "string",
+      "enum": ["DAM"],
+      "description": "Energy market type. DAM = Day-Ahead Market."
+    },
+    "program": {
+      "type": "string",
+      "enum": ["CalFUSE"],
+      "description": "Pricing program name."
+    },
+    "ratename": {
+      "type": "string",
+      "enum": [
+        "AG-A1", "AG-A2",
+        "AGBP", "AGBS", "AGCP", "AGCS",
+        "B6", "B10P", "B10S", "B19P", "B19S", "B20P", "B20S",
+        "EELEC",
+        "BEV1", "BEV2P", "BEV2S",
+        "EV2AS"
+      ],
+      "description": "PG&E rate schedule code. AG-* = agriculture, B* = business, EELEC = residential electric, BEV* = business EV, EV2AS = residential EV."
+    },
+    "cca": {
+      "type": "string",
+      "enum": ["PCE", "AVA", "SVCE", "MCE", "VCE", "SJCE", "3CE", "PIO"],
+      "description": "Community Choice Aggregator code. Optional; omit for bundled PG&E service."
+    },
+    "representativeCircuitId": {
+      "type": "string",
+      "pattern": "^\\d{9}$",
+      "description": "9-digit representative circuit ID assigned to a customer service point. Include leading zeros.",
+      "enum": [
+        "012041131", "012640401", "013532223", "013921103", "014052103",
+        "014321101", "014592108", "022011162", "024011104", "024040403",
+        "024091102", "024101103", "024131103", "042211101", "042450414",
+        "042571101", "042891102", "082031112", "082831109", "082952113",
+        "083182102", "083371113", "083611114", "083771102", "083892102",
+        "102841106", "103081106", "103351101", "152442109", "152561107",
+        "152701109", "162611702", "162611703", "162611704", "162991101",
+        "163121106", "163191711", "163191714", "163251101", "163722110",
+        "163912104", "182191101", "182381104", "182492104", "183052109",
+        "252051104", "252051114", "252062112", "252281111", "252711104",
+        "252802101", "253611106", "253882109", "253911102", "254081104",
+        "254091104", "254411105", "254452101", "254572101"
+      ]
+    },
+    "priceComponent": {
+      "type": "string",
+      "enum": ["mec", "mgcc", "cld"],
+      "description": "Price component identifier. mec = Marginal Energy Cost, mgcc = Marginal Generation Capacity Cost, cld = Circuit Load Distribution."
+    },
+    "priceType": {
+      "type": "string",
+      "enum": ["generation", "distribution"],
+      "description": "Category of the price component."
+    },
+    "priceStatus": {
+      "type": "string",
+      "enum": ["Final"],
+      "description": "Status of the price interval. Currently always 'Final' for historical prices."
+    }
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "code": 200,
+    "requestURL": "https://pe-api.gridx.com/stage/v1/getpricing",
+    "requestBody": "{\"enddate\":\"20250301\",\"market\":\"DAM\",\"program\":\"CalFUSE\",\"ratename\":\"EELEC\",\"representativeCircuitId\":\"013532223\",\"startdate\":\"20250301\",\"utility\":\"PGE\"}",
+    "response": "Request succeeded"
+  },
+  "data": [
+    {
+      "priceHeader": {
+        "priceCurveName": "PGE-CalFUSE-EELEC-SECONDARY",
+        "marketName": "CAISO-DAM",
+        "intervalLengthInMinutes": 60,
+        "settlementCurrency": "USD",
+        "settlementUnit": "kWh",
+        "startTime": "2025-03-01T00:00:00-0800",
+        "endTime": "2025-03-01T23:59:59-0800",
+        "recordCount": 24
+      },
+      "priceDetails": [
+        {
+          "startIntervalTimeStamp": "2025-03-01T00:00:00-0800",
+          "intervalPrice": "0.053046",
+          "priceStatus": "Final",
+          "priceComponents": [
+            {
+              "component": "cld",
+              "intervalPrice": "0.000482",
+              "priceType": "distribution"
+            },
+            {
+              "component": "mec",
+              "intervalPrice": "0.052564",
+              "priceType": "generation"
+            },
+            {
+              "component": "mgcc",
+              "intervalPrice": "0.000000",
+              "priceType": "generation"
+            }
+          ]
+        },
+        {
+          "startIntervalTimeStamp": "2025-03-01T08:00:00-0800",
+          "intervalPrice": "0.058432",
+          "priceStatus": "Final",
+          "priceComponents": [
+            {
+              "component": "cld",
+              "intervalPrice": "0.001141",
+              "priceType": "distribution"
+            },
+            {
+              "component": "mec",
+              "intervalPrice": "0.057291",
+              "priceType": "generation"
+            },
+            {
+              "component": "mgcc",
+              "intervalPrice": "0.000000",
+              "priceType": "generation"
+            }
+          ]
+        },
+        {
+          "startIntervalTimeStamp": "2025-03-01T17:00:00-0800",
+          "intervalPrice": "0.082979",
+          "priceStatus": "Final",
+          "priceComponents": [
+            {
+              "component": "cld",
+              "intervalPrice": "0.002016",
+              "priceType": "distribution"
+            },
+            {
+              "component": "mec",
+              "intervalPrice": "0.080963",
+              "priceType": "generation"
+            },
+            {
+              "component": "mgcc",
+              "intervalPrice": "0.000000",
+              "priceType": "generation"
+            }
+          ]
+        },
+        {
+          "startIntervalTimeStamp": "2025-03-01T23:00:00-0800",
+          "intervalPrice": "0.059126",
+          "priceStatus": "Final",
+          "priceComponents": [
+            {
+              "component": "cld",
+              "intervalPrice": "0.000587",
+              "priceType": "distribution"
+            },
+            {
+              "component": "mec",
+              "intervalPrice": "0.058539",
+              "priceType": "generation"
+            },
+            {
+              "component": "mgcc",
+              "intervalPrice": "0.000000",
+              "priceType": "generation"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

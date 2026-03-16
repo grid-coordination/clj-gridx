@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gridx-price-component.schema.json",
+  "title": "GridX Price Component",
+  "description": "A single price component within an interval (MEC, MGCC, or CLD).",
+  "type": "object",
+  "required": ["component", "intervalPrice", "priceType"],
+  "properties": {
+    "component": {
+      "$ref": "gridx-enums.schema.json#/$defs/priceComponent"
+    },
+    "intervalPrice": {
+      "type": "string",
+      "pattern": "^-?[0-9]+\\.[0-9]+$",
+      "description": "Price for this component in the interval, as a decimal string in $/kWh."
+    },
+    "priceType": {
+      "$ref": "gridx-enums.schema.json#/$defs/priceType"
+    }
+  },
+  "additionalProperties": false
+}

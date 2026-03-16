@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gridx-price-header.schema.json",
+  "title": "GridX Price Header",
+  "description": "Header metadata for a daily price curve.",
+  "type": "object",
+  "required": [
+    "priceCurveName",
+    "marketName",
+    "intervalLengthInMinutes",
+    "settlementCurrency",
+    "settlementUnit",
+    "startTime",
+    "endTime",
+    "recordCount"
+  ],
+  "properties": {
+    "priceCurveName": {
+      "type": "string",
+      "description": "Name of the price curve (e.g. 'PGE-CalFUSE-EELEC-SECONDARY')."
+    },
+    "marketName": {
+      "type": "string",
+      "description": "Market identifier (e.g. 'CAISO-DAM')."
+    },
+    "intervalLengthInMinutes": {
+      "type": "integer",
+      "enum": [15, 60],
+      "description": "Length of each price interval in minutes. 60 for most meters, 15 for AMI-enabled meters."
+    },
+    "settlementCurrency": {
+      "type": "string",
+      "description": "Currency code for prices (e.g. 'USD')."
+    },
+    "settlementUnit": {
+      "type": "string",
+      "description": "Unit of energy for prices (e.g. 'kWh')."
+    },
+    "startTime": {
+      "type": "string",
+      "description": "ISO 8601 start time of the price curve period."
+    },
+    "endTime": {
+      "type": "string",
+      "description": "ISO 8601 end time of the price curve period."
+    },
+    "recordCount": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of price detail records in this curve."
+    }
+  },
+  "additionalProperties": false
+}
