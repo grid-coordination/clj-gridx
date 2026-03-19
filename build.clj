@@ -21,11 +21,15 @@
   (assoc opts
          :lib lib :version version
          :jar-file (format "target/%s-%s.jar" (name lib) version)
-         :scm {:tag (str "v" version)}
          :basis (b/create-basis {})
          :class-dir class-dir
          :target "target"
-         :src-dirs ["src"]))
+         :src-dirs ["src"]
+         :description "Clojure client library for the GridX Pricing API"
+         :url "https://grid-coordination.energy"
+         :licenses [{:name "MIT" :url "https://opensource.org/licenses/MIT"}]
+         :scm {:tag (str "v" version)
+               :url "https://github.com/grid-coordination/clj-gridx"}))
 
 (defn ci "Run the CI pipeline of tests (and build the JAR)." [opts]
   (test opts)
