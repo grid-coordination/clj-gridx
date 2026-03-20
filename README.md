@@ -1,5 +1,7 @@
 # clj-gridx
 
+[![Clojars Project](https://img.shields.io/clojars/v/energy.grid-coordination/clj-gridx.svg)](https://clojars.org/energy.grid-coordination/clj-gridx)
+
 A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), providing access to marginal cost pricing data for California utilities. Built on a [non-official OpenAPI spec](https://github.com/grid-coordination/gridx-api-specs#disclaimer) derived from GridX's public developer docs.
 
 ## Features
@@ -15,8 +17,7 @@ A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), 
 Add to your `deps.edn`:
 
 ```clojure
-;; TODO: publish coordinates once deployed
-{:deps {com.example/clj-gridx {:mvn/version "0.1.0"}}}
+{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.1.0-SNAPSHOT"}}}
 ```
 
 ## Quick Start
