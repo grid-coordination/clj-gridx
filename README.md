@@ -18,7 +18,7 @@ A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), 
 Add to your `deps.edn`:
 
 ```clojure
-{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.1.0-SNAPSHOT"}}}
+{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.2.0"}}}
 ```
 
 ## Quick Start
@@ -86,12 +86,41 @@ The coercion layer (`gridx.pricing`) is shared — both utilities produce the sa
 | Aspect | PG&E | SCE |
 |--------|------|-----|
 | Client namespace | `gridx.pge.client` | `gridx.sce.client` |
-| Circuit parameter | `:representativeCircuitId` (9-digit number) | `:representativeCircuitId` (substation name, e.g. `"System"`) |
+| Circuit parameter | `:representativeCircuitId` (9-digit feeder ID; see [circuit lookup](#pge-circuit-id-lookup)) | `:representativeCircuitId` (substation name, e.g. `"System"`) |
 | Rate names | AG-A1, B6, EELEC, EV2AS, ... | TOU-GS-1, TOU-EV-9S, TOU-PRIME, ... |
 | Components per interval | 3 (cld, mec, mgcc) | 8 (abank, bbank, circuitpricecurve, mec, nbc, ppf, ramp, transmissionpricecurve) |
 | Price types | generation, distribution | generation, distribution, nonbypassablecharge, transmission |
 | CCA support | Yes (optional `:cca` param) | No |
 | Data available from | 2024-06-01 | 2025-07-01 |
+
+## PG&E Circuit ID Lookup
+
+PG&E's `representativeCircuitId` is a 9-digit distribution feeder identifier. PG&E presents customers with a dropdown of these opaque numbers with no indication of what or where they are. The `gridx.pge.circuits` namespace maps all 98 known circuit IDs to their substation locations.
+
+```clojure
+(require '[gridx.pge.circuits :as circuits])
+
+;; Find circuit IDs by substation name (case-insensitive)
+(circuits/find-circuits "mountain view")
+;=> (["082031112" {:region "South Bay and Central Coast"
+;                   :division "De Anza"
+;                   :substation "MOUNTAIN VIEW"
+;                   :feeder "1112"
+;                   :in-gridx-enum? true}])
+
+;; Look up a specific circuit
+(circuits/circuit-location "013532223")
+;=> {:region "Bay Area", :division "Diablo", :substation "LAKEWOOD", ...}
+
+;; Browse by region
+(keys (circuits/circuits-by-region))
+;=> ("Bay Area" "Central Valley" "North Coast" ...)
+
+;; Only circuits confirmed in the GridX API (59 of 98)
+(count (circuits/gridx-circuits))  ;=> 59
+```
+
+Data derived from the [PG&E 2022 Grid Needs Assessment](https://docs.cpuc.ca.gov/PublishedDocs/Efile/G000/M496/K629/496629893.PDF) (CPUC filing 496629893, Appendix D) and the [Priicer community cross-reference](https://forum.priicer.com/t/pg-e-dynamic-pilot-california/33).
 
 ## Data Model
 
@@ -290,6 +319,16 @@ Most consumers won't need these. They mirror the JSON exactly and are primarily 
 | `get-pricing` | Fetch SCE pricing. Fills in utility/market/program. Params: `:startdate`, `:enddate`, `:ratename`, `:representativeCircuitId` |
 | `stage-url` | SCE stage API base URL |
 | `production-url` | SCE production API base URL |
+
+### `gridx.pge.circuits` — Circuit ID Lookup
+
+| Function | Description |
+|----------|-------------|
+| `circuit-locations` | Map of all 98 circuit IDs to location info |
+| `circuit-location` | Look up location for a circuit ID |
+| `find-circuits` | Search by substation name (case-insensitive substring) |
+| `circuits-by-region` | Group circuits by PG&E distribution planning region |
+| `gridx-circuits` | Return only circuits confirmed in the GridX API |
 
 ### `gridx.client` — Shared
 
