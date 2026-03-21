@@ -2,6 +2,7 @@
   "REPL development utilities."
   (:require [gridx.client :as client]
             [gridx.pge.client :as pge]
+            [gridx.pge.circuits :as circuits]
             [gridx.sce.client :as sce]
             [gridx.pricing :as pricing]))
 
@@ -71,4 +72,23 @@
 
   ;; Access raw data via metadata
   (-> pge-resp pricing/curves first meta :gridx/raw)
-  (-> sce-resp pricing/curves first meta :gridx/raw))
+  (-> sce-resp pricing/curves first meta :gridx/raw)
+
+  ;; -- Circuit lookup --
+  ;; Find circuit IDs by substation name
+  (circuits/find-circuits "mountain view")
+  ;=> (["082031112" {:region "South Bay and Central Coast", ...}])
+
+  (circuits/find-circuits "woodland")
+  ;=> (["062031101" {...}] ["062031102" {...}] ...)
+
+  ;; Look up a specific circuit
+  (circuits/circuit-location "013532223")
+  ;=> {:region "Bay Area", :division "Diablo", :substation "LAKEWOOD", ...}
+
+  ;; Browse by region
+  (keys (circuits/circuits-by-region))
+
+  ;; Only circuits confirmed in GridX API
+  (count (circuits/gridx-circuits))  ;=> 59
+  )

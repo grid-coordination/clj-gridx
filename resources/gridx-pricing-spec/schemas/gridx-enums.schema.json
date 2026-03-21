@@ -39,7 +39,7 @@
     "representativeCircuitId": {
       "type": "string",
       "pattern": "^\\d{9}$",
-      "description": "9-digit representative circuit ID assigned to a customer service point. Include leading zeros.",
+      "description": "9-digit PG&E distribution feeder identifier assigned to a customer service point. Encodes region, division, substation, and feeder number. Include leading zeros. See data/pge-circuit-locations.edn for the circuit-to-location mapping (98 known circuits; 59 confirmed in GridX API). Sources: PG&E 2022 Grid Needs Assessment (CPUC filing 496629893, Appendix D) and the Priicer community (https://forum.priicer.com/t/pg-e-dynamic-pilot-california/33).",
       "enum": [
         "012041131", "012640401", "013532223", "013921103", "014052103",
         "014321101", "014592108", "022011162", "024011104", "024040403",

@@ -1,0 +1,106 @@
+;; PG&E representative circuit ID to location mapping.
+;; Derived from PG&E's 2022 Grid Needs Assessment (CPUC filing 496629893,
+;; Appendix D) and the Priicer community cross-reference:
+;;   https://forum.priicer.com/t/pg-e-dynamic-pilot-california/33
+;;   https://docs.cpuc.ca.gov/PublishedDocs/Efile/G000/M496/K629/496629893.PDF
+;;
+;; Circuits not in the current GridX API enum are marked :in-gridx-enum? false.
+
+{"012041131" {:region "Bay Area" :division "East Bay" :substation "OAKLAND D" :feeder "1131" :note "previously 1113" :in-gridx-enum? true}
+ "012640401" {:region "Bay Area" :division "East Bay" :substation "BECK STREET" :feeder "0401" :in-gridx-enum? true}
+ "013532223" {:region "Bay Area" :division "Diablo" :substation "LAKEWOOD" :feeder "2223" :in-gridx-enum? true}
+ "013921103" {:region "Bay Area" :division "East Bay" :substation "FRANKLIN" :feeder "1103" :in-gridx-enum? true}
+ "014052103" {:region "Bay Area" :division "Mission" :substation "NORTH DUBLIN" :feeder "2103" :in-gridx-enum? true}
+ "014321101" {:region "Bay Area" :division "Diablo" :substation "SAN RAMON (BALFOUR)" :feeder "1101" :in-gridx-enum? true}
+ "014592108" {:region "Bay Area" :division "Diablo" :substation "BRENTWOOD" :feeder "2108" :in-gridx-enum? true}
+ "022011162" {:region "Bay Area" :division "Peninsula" :substation "MISSION X BANK 10" :feeder "1162" :in-gridx-enum? true}
+ "024011104" {:region "Bay Area" :division "Peninsula" :substation "BAY MEADOWS" :feeder "1104" :in-gridx-enum? true}
+ "024040403" {:region "Bay Area" :division "Peninsula" :substation "BERESFORD" :feeder "0403" :in-gridx-enum? true}
+ "024091102" {:region "Bay Area" :division "Peninsula" :substation "GLENWOOD" :feeder "1102" :in-gridx-enum? true}
+ "024101103" {:region "Bay Area" :division "Peninsula" :substation "HALF MOON BAY" :feeder "1103" :in-gridx-enum? true}
+ "024131103" {:region "Bay Area" :division "Peninsula" :substation "MENLO" :feeder "1103" :in-gridx-enum? true}
+ "042211101" {:region "North Coast" :division "North Bay" :substation "NOVATO" :feeder "1101" :in-gridx-enum? true}
+ "042450414" {:region "North Valley and Sierra" :division "North Bay" :substation "VALLEJO B" :feeder "0414" :in-gridx-enum? true}
+ "042571101" {:region "North Coast" :division "Sonoma" :substation "MOLINO" :feeder "1101" :in-gridx-enum? true}
+ "042891102" {:region "North Coast" :division "Sonoma" :substation "GEYSERVILLE" :feeder "1102" :in-gridx-enum? true}
+ "062031101" {:region "North Valley and Sierra" :division "Sacramento" :substation "WOODLAND" :feeder "1101" :in-gridx-enum? false}
+ "062031102" {:region "North Valley and Sierra" :division "Sacramento" :substation "WOODLAND" :feeder "1102" :in-gridx-enum? false}
+ "062031105" {:region "North Valley and Sierra" :division "Sacramento" :substation "WOODLAND" :feeder "1105" :in-gridx-enum? false}
+ "062031106" {:region "North Valley and Sierra" :division "Sacramento" :substation "WOODLAND" :feeder "1106" :in-gridx-enum? false}
+ "062031108" {:region "North Valley and Sierra" :division "Sacramento" :substation "WOODLAND" :feeder "1108" :in-gridx-enum? false}
+ "062031110" {:region "North Valley and Sierra" :division "Sacramento" :substation "WOODLAND" :feeder "1110" :in-gridx-enum? false}
+ "062031112" {:region "North Valley and Sierra" :division "Sacramento" :substation "WOODLAND" :feeder "1112" :in-gridx-enum? false}
+ "062031113" {:region "North Valley and Sierra" :division "Sacramento" :substation "WOODLAND" :feeder "1113" :in-gridx-enum? false}
+ "062041101" {:region "North Valley and Sierra" :division "Sacramento" :substation "DAVIS" :feeder "1101" :in-gridx-enum? false}
+ "062041103" {:region "North Valley and Sierra" :division "Sacramento" :substation "DAVIS" :feeder "1103" :in-gridx-enum? false}
+ "062041106" {:region "North Valley and Sierra" :division "Sacramento" :substation "DAVIS" :feeder "1106" :in-gridx-enum? false}
+ "062041107" {:region "North Valley and Sierra" :division "Sacramento" :substation "DAVIS" :feeder "1107" :in-gridx-enum? false}
+ "062041109" {:region "North Valley and Sierra" :division "Sacramento" :substation "DAVIS" :feeder "1109" :in-gridx-enum? false}
+ "062041112" {:region "North Valley and Sierra" :division "Sacramento" :substation "DAVIS" :feeder "1112" :in-gridx-enum? false}
+ "062061103" {:region "North Valley and Sierra" :division "Sacramento" :substation "DIXON" :feeder "1103" :in-gridx-enum? false}
+ "062081104" {:region "North Valley and Sierra" :division "Sacramento" :substation "ARBUCKLE" :feeder "1104" :in-gridx-enum? false}
+ "062462223" {:region "North Valley and Sierra" :division "Sacramento" :substation "GRAND ISLAND" :feeder "2223" :in-gridx-enum? false}
+ "062462227" {:region "North Valley and Sierra" :division "Sacramento" :substation "GRAND ISLAND" :feeder "2227" :in-gridx-enum? false}
+ "062721101" {:region "North Valley and Sierra" :division "Sacramento" :substation "KNIGHTS LANDING" :feeder "1101" :in-gridx-enum? false}
+ "062721102" {:region "North Valley and Sierra" :division "Sacramento" :substation "KNIGHTS LANDING" :feeder "1102" :in-gridx-enum? false}
+ "062771101" {:region "North Valley and Sierra" :division "Sacramento" :substation "WILKINS SLOUGH" :feeder "1101" :in-gridx-enum? false}
+ "063131104" {:region "North Valley and Sierra" :division "Sacramento" :substation "WEST SACRAMENTO" :feeder "1104" :in-gridx-enum? false}
+ "063131109" {:region "North Valley and Sierra" :division "Sacramento" :substation "WEST SACRAMENTO" :feeder "1109" :in-gridx-enum? false}
+ "063171103" {:region "North Valley and Sierra" :division "Sacramento" :substation "MADISON" :feeder "1103" :in-gridx-enum? false}
+ "063171105" {:region "North Valley and Sierra" :division "Sacramento" :substation "MADISON" :feeder "1105" :in-gridx-enum? false}
+ "063172101" {:region "North Valley and Sierra" :division "Sacramento" :substation "MADISON" :feeder "2101" :in-gridx-enum? false}
+ "063191105" {:region "North Valley and Sierra" :division "Sacramento" :substation "ZAMORA" :feeder "1105" :in-gridx-enum? false}
+ "063191106" {:region "North Valley and Sierra" :division "Sacramento" :substation "ZAMORA" :feeder "1106" :in-gridx-enum? false}
+ "063191107" {:region "North Valley and Sierra" :division "Sacramento" :substation "ZAMORA" :feeder "1107" :in-gridx-enum? false}
+ "063321101" {:region "North Valley and Sierra" :division "Sacramento" :substation "WINTERS" :feeder "1101" :in-gridx-enum? false}
+ "063321102" {:region "North Valley and Sierra" :division "Sacramento" :substation "WINTERS" :feeder "1102" :in-gridx-enum? false}
+ "063441101" {:region "North Valley and Sierra" :division "Sacramento" :substation "PLAINFIELD" :feeder "1101" :in-gridx-enum? false}
+ "063441105" {:region "North Valley and Sierra" :division "Sacramento" :substation "PLAINFIELD" :feeder "1105" :in-gridx-enum? false}
+ "063441106" {:region "North Valley and Sierra" :division "Sacramento" :substation "PLAINFIELD" :feeder "1106" :in-gridx-enum? false}
+ "063621105" {:region "North Valley and Sierra" :division "Sacramento" :substation "DEEPWATER" :feeder "1105" :in-gridx-enum? false}
+ "063681102" {:region "North Valley and Sierra" :division "Sacramento" :substation "PUTAH CREEK" :feeder "1102" :in-gridx-enum? false}
+ "063681103" {:region "North Valley and Sierra" :division "Sacramento" :substation "PUTAH CREEK" :feeder "1103" :in-gridx-enum? false}
+ "063681105" {:region "North Valley and Sierra" :division "Sacramento" :substation "PUTAH CREEK" :feeder "1105" :in-gridx-enum? false}
+ "063811101" {:region "North Valley and Sierra" :division "Sacramento" :substation "DUNNIGAN" :feeder "1101" :in-gridx-enum? false}
+ "082031112" {:region "South Bay and Central Coast" :division "De Anza" :substation "MOUNTAIN VIEW" :feeder "1112" :in-gridx-enum? true}
+ "082831109" {:region "South Bay and Central Coast" :division "San Jose" :substation "MILPITAS" :feeder "1109" :in-gridx-enum? true}
+ "082952113" {:region "South Bay and Central Coast" :division "San Jose" :substation "EDENVALE" :feeder "2113" :in-gridx-enum? true}
+ "083182102" {:region "South Bay and Central Coast" :division "San Jose" :substation "LLAGAS" :feeder "2102" :in-gridx-enum? true}
+ "083371113" {:region "South Bay and Central Coast" :division "De Anza" :substation "SARATOGA" :feeder "1113" :in-gridx-enum? true}
+ "083611114" {:region "South Bay and Central Coast" :division "De Anza" :substation "BRITTON" :feeder "1114" :in-gridx-enum? true}
+ "083771102" {:region "South Bay and Central Coast" :division "De Anza" :substation "VASONA" :feeder "1102" :in-gridx-enum? true}
+ "083892102" {:region "South Bay and Central Coast" :division "San Jose" :substation "MONTAGUE" :feeder "2102" :in-gridx-enum? true}
+ "102841106" {:region "North Valley and Sierra" :division "North Valley" :substation "ANITA" :feeder "1106" :in-gridx-enum? true}
+ "103081106" {:region "North Valley and Sierra" :division "North Valley" :substation "BUTTE" :feeder "1106" :in-gridx-enum? true}
+ "103351101" {:region "North Valley and Sierra" :division "North Valley" :substation "DESCHUTES" :feeder "1101" :in-gridx-enum? true}
+ "152442109" {:region "North Valley and Sierra" :division "Sierra" :substation "PLEASANT GROVE" :feeder "2109" :in-gridx-enum? true}
+ "152561107" {:region "North Valley and Sierra" :division "Sierra" :substation "PENRYN" :feeder "1107" :in-gridx-enum? true}
+ "152701109" {:region "North Valley and Sierra" :division "Sierra" :substation "BELL" :feeder "1109" :in-gridx-enum? true}
+ "162611702" {:region "Central Valley" :division "Stockton" :substation "MANTECA" :feeder "1702" :in-gridx-enum? true}
+ "162611703" {:region "Central Valley" :division "Stockton" :substation "MANTECA" :feeder "1703" :in-gridx-enum? true}
+ "162611704" {:region "Central Valley" :division "Stockton" :substation "MANTECA" :feeder "1704" :in-gridx-enum? true}
+ "162991101" {:region "Central Valley" :division "Stockton" :substation "CORRAL" :feeder "1101" :in-gridx-enum? true}
+ "163121106" {:region "Central Valley" :division "Stockton" :substation "COUNTRY CLUB" :feeder "1106" :in-gridx-enum? true}
+ "163191711" {:region "Central Valley" :division "Yosemite" :substation "RIVERBANK" :feeder "1711" :in-gridx-enum? true}
+ "163191714" {:region "Central Valley" :division "Yosemite" :substation "RIVERBANK" :feeder "1714" :in-gridx-enum? true}
+ "163251101" {:region "Central Valley" :division "Yosemite" :substation "CROWS LANDING" :feeder "1101" :in-gridx-enum? true}
+ "163722110" {:region "Central Valley" :division "Stockton" :substation "MOSHER" :feeder "2110" :in-gridx-enum? true}
+ "163912104" {:region "Central Valley" :division "Stockton" :substation "EIGHT MILE" :feeder "2104" :in-gridx-enum? true}
+ "182191101" {:region "South Bay and Central Coast" :division "Central Coast" :substation "SAN ARDO" :feeder "1101" :in-gridx-enum? true}
+ "182381104" {:region "South Bay and Central Coast" :division "Central Coast" :substation "DOLAN ROAD" :feeder "1104" :in-gridx-enum? true}
+ "182492104" {:region "South Bay and Central Coast" :division "Central Coast" :substation "HOLLISTER" :feeder "2104" :in-gridx-enum? true}
+ "183052109" {:region "South Bay and Central Coast" :division "Los Padres" :substation "TEMPLETON" :feeder "2109" :in-gridx-enum? true}
+ "252051104" {:region "Central Valley" :division "Fresno" :substation "ASHLAN AVENUE" :feeder "1104" :in-gridx-enum? true}
+ "252051114" {:region "Central Valley" :division "Fresno" :substation "ASHLAN AVENUE" :feeder "1114" :in-gridx-enum? true}
+ "252062112" {:region "Central Valley" :division "Fresno" :substation "SHEPHERD" :feeder "2112" :in-gridx-enum? true}
+ "252281111" {:region "Central Valley" :division "Fresno" :substation "CALIFORNIA AVE" :feeder "1111" :in-gridx-enum? true}
+ "252711104" {:region "Central Valley" :division "Fresno" :substation "KERMAN" :feeder "1104" :in-gridx-enum? true}
+ "252802101" {:region "Central Valley" :division "Yosemite" :substation "MERCED" :feeder "2101" :in-gridx-enum? true}
+ "253611106" {:region "Central Valley" :division "Yosemite" :substation "ATWATER" :feeder "1106" :in-gridx-enum? true}
+ "253882109" {:region "Central Valley" :division "Yosemite" :substation "EL CAPITAN" :feeder "2109" :in-gridx-enum? true}
+ "253911102" {:region "Central Valley" :division "Kern" :substation "LAMONT" :feeder "1102" :in-gridx-enum? true}
+ "254081104" {:region "Central Valley" :division "Fresno" :substation "CLOVIS" :feeder "1104" :in-gridx-enum? true}
+ "254091104" {:region "Central Valley" :division "Fresno" :substation "DINUBA" :feeder "1104" :in-gridx-enum? true}
+ "254411105" {:region "Central Valley" :division "Fresno" :substation "MC MULLIN SUB" :feeder "1105" :in-gridx-enum? true}
+ "254452101" {:region "Central Valley" :division "Yosemite" :substation "MARIPOSA" :feeder "2101" :in-gridx-enum? true}
+ "254572101" {:region "Central Valley" :division "Kern" :substation "RENFRO" :feeder "2101" :in-gridx-enum? true}}

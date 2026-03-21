@@ -9,10 +9,14 @@
     :startdate               - \"YYYYMMDD\" (earliest 20240601)
     :enddate                 - \"YYYYMMDD\" (max ~2 weeks span)
     :ratename                - PG&E rate schedule code (e.g. \"EELEC\")
-    :representativeCircuitId - 9-digit string with leading zeros
+    :representativeCircuitId - 9-digit feeder ID (see gridx.pge.circuits
+                               for location lookup)
 
   Optional params:
-    :cca                     - CCA code (e.g. \"AVA\", \"PCE\")"
+    :cca                     - CCA code (e.g. \"AVA\", \"PCE\")
+
+  Use `gridx.pge.circuits/find-circuits` to look up circuit IDs by
+  substation name, e.g. (find-circuits \"mountain view\")."
   (:require [gridx.client :as client]))
 
 (def default-spec-path "gridx-pricing-spec/pge/openapi.yaml")
@@ -39,7 +43,7 @@
     :startdate               - \"YYYYMMDD\"
     :enddate                 - \"YYYYMMDD\"
     :ratename                - rate schedule code
-    :representativeCircuitId - 9-digit circuit ID
+    :representativeCircuitId - 9-digit feeder ID (see gridx.pge.circuits)
 
   Optional params:
     :cca                     - CCA code"

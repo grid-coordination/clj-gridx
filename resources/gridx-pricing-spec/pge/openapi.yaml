@@ -157,8 +157,23 @@ components:
       type: string
       pattern: '^\d{9}$'
       description: |
-        9-digit representative circuit ID assigned to a customer service point.
-        Known valid values scraped from PG&E Hourly Flex Pricing web page (as of 2026-03).
+        9-digit PG&E distribution feeder identifier assigned to a customer service
+        point. Encodes region, division, substation, and feeder number. Include
+        leading zeros.
+
+        To determine your circuit ID, use `gridx.pge.circuits/find-circuits` or
+        see `data/pge-circuit-locations.edn` for the full mapping of all 98 known
+        circuit IDs to their location (region, division, substation, feeder).
+
+        Sources:
+        - PG&E 2022 Grid Needs Assessment, CPUC filing 496629893, Appendix D
+          (https://docs.cpuc.ca.gov/PublishedDocs/Efile/G000/M496/K629/496629893.PDF)
+        - Priicer community cross-reference
+          (https://forum.priicer.com/t/pg-e-dynamic-pilot-california/33)
+
+        The enum below lists the 59 circuits confirmed available via the GridX API.
+        An additional 39 Sacramento-area circuits exist in the CPUC filing but have
+        not been verified against the API; see the reference data for the full list.
       example: '013532223'
       enum:
         - '012041131'
