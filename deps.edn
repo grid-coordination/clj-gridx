@@ -17,6 +17,10 @@
  :aliases
  {:test
   {:extra-paths ["test" "dev"], :extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}}},
+  :test-integration
+  {:extra-paths ["test-integration" "dev"],
+   :extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}},
+   :main-opts ["-m" "kaocha.runner" "--focus" ":integration"]},
   :dev
   {:extra-paths ["dev"],
    :extra-deps

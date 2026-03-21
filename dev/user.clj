@@ -1,52 +1,74 @@
 (ns user
   "REPL development utilities."
   (:require [gridx.client :as client]
+            [gridx.pge.client :as pge]
+            [gridx.sce.client :as sce]
             [gridx.pricing :as pricing]))
 
-(defonce gridx-client (atom nil))
+(defonce pge-client (atom nil))
+(defonce sce-client (atom nil))
+
+(defn start-pge!
+  "Initialize a PG&E GridX client for REPL use."
+  ([] (start-pge! {}))
+  ([opts]
+   (reset! pge-client (pge/create-client opts))
+   :pge-started))
+
+(defn start-sce!
+  "Initialize an SCE GridX client for REPL use."
+  ([] (start-sce! {}))
+  ([opts]
+   (reset! sce-client (sce/create-client opts))
+   :sce-started))
 
 (defn start!
-  "Initialize a GridX client for REPL use."
-  ([] (start! {}))
-  ([opts]
-   (reset! gridx-client (client/create-client opts))
-   :started))
+  "Initialize both PG&E and SCE clients."
+  []
+  (start-pge!)
+  (start-sce!)
+  :started)
 
-(defn fetch-pricing
-  "Quick REPL helper to fetch pricing data.
-  Example: (fetch-pricing \"EELEC\" \"013532223\" \"20250301\" \"20250301\")"
+(defn fetch-pge-pricing
+  "Quick REPL helper to fetch PG&E pricing data.
+  Example: (fetch-pge-pricing \"EELEC\" \"013532223\" \"20250301\" \"20250301\")"
   [ratename circuit-id startdate enddate]
-  (client/get-pricing
-   @gridx-client
-   {:utility "PGE"
-    :market "DAM"
-    :program "CalFUSE"
-    :startdate startdate
+  (pge/get-pricing
+   @pge-client
+   {:startdate startdate
     :enddate enddate
     :ratename ratename
     :representativeCircuitId circuit-id}))
 
+(defn fetch-sce-pricing
+  "Quick REPL helper to fetch SCE pricing data.
+  Example: (fetch-sce-pricing \"TOU-EV-9S\" \"System\" \"20250701\" \"20250701\")"
+  [ratename circuit startdate enddate]
+  (sce/get-pricing
+   @sce-client
+   {:startdate startdate
+    :enddate enddate
+    :ratename ratename
+    :representativeCircuitId circuit}))
+
 (comment
-  ;; Start the client
+  ;; Start clients
   (start!)
 
-  ;; Fetch EELEC pricing for March 1, 2025
-  (def resp (fetch-pricing "EELEC" "013532223" "20250301" "20250301"))
+  ;; -- PG&E --
+  (def pge-resp (fetch-pge-pricing "EELEC" "013532223" "20250301" "20250301"))
+  (pricing/success? pge-resp)
+  (pricing/raw-curves pge-resp)
+  (pricing/curves pge-resp)
+  (-> pge-resp pricing/curves first :gridx.curve/intervals first)
 
-  ;; Check success
-  (pricing/success? resp)
-
-  ;; Extract curves
-  (pricing/price-curves resp)
-
-  ;; Look at first interval's components (raw)
-  (-> resp pricing/raw-curves first :priceDetails first)
-
-  ;; Coerced Clojure-friendly curves
-  (pricing/curves resp)
-
-  ;; First coerced interval
-  (-> resp pricing/curves first :gridx.curve/intervals first)
+  ;; -- SCE --
+  (def sce-resp (fetch-sce-pricing "TOU-EV-9S" "System" "20250701" "20250701"))
+  (pricing/success? sce-resp)
+  (pricing/raw-curves sce-resp)
+  (pricing/curves sce-resp)
+  (-> sce-resp pricing/curves first :gridx.curve/intervals first)
 
   ;; Access raw data via metadata
-  (-> resp pricing/curves first meta :gridx/raw))
+  (-> pge-resp pricing/curves first meta :gridx/raw)
+  (-> sce-resp pricing/curves first meta :gridx/raw))

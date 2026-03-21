@@ -2,17 +2,16 @@
   "Malli schemas for coerced GridX pricing entities.
 
   These describe the Clojure-native shape produced by `gridx.pricing/curves`:
-  namespaced keywords, BigDecimals, Instants, OffsetDateTimes, and tick intervals."
+  namespaced keywords, BigDecimals, Instants, OffsetDateTimes, and tick intervals.
+
+  Component names and price types cover both PG&E and SCE vocabularies."
   (:import [java.time OffsetDateTime]))
 
 (def Component
   [:map
-   [:gridx.component/name [:enum :gridx.component/cld
-                           :gridx.component/mec
-                           :gridx.component/mgcc]]
+   [:gridx.component/name :keyword]
    [:gridx.component/price decimal?]
-   [:gridx.component/type [:enum :gridx.price-type/generation
-                           :gridx.price-type/distribution]]])
+   [:gridx.component/type :keyword]])
 
 (def Interval
   [:map

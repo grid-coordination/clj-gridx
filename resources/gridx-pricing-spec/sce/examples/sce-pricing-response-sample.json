@@ -1,0 +1,118 @@
+{
+  "meta": {
+    "code": 200,
+    "requestURL": "https://sce-api-prod.gridx.com/v1/getpricing",
+    "requestBody": "{\"enddate\":\"20250701\",\"market\":\"DAM\",\"program\":\"CalFUSE\",\"ratename\":\"TOU-EV-9S\",\"representativeCircuitId\":\"System\",\"startdate\":\"20250701\",\"utility\":\"SCE\"}",
+    "response": "Request succeeded"
+  },
+  "data": [
+    {
+      "priceHeader": {
+        "priceCurveName": "SCE-CalFUSE-TOU-EV-9S-SECONDARY",
+        "marketName": "CAISO-DAM",
+        "intervalLengthInMinutes": 60,
+        "settlementCurrency": "USD",
+        "settlementUnit": "kWh",
+        "startTime": "2025-07-01T00:00:00-0700",
+        "endTime": "2025-07-01T23:59:59-0700",
+        "recordCount": 24
+      },
+      "priceDetails": [
+        {
+          "startIntervalTimeStamp": "2025-07-01T00:00:00-0700",
+          "intervalPrice": "0.139976",
+          "priceStatus": "Final",
+          "priceComponents": [
+            {
+              "component": "abank",
+              "intervalPrice": "0.009422",
+              "priceType": "distribution"
+            },
+            {
+              "component": "bbank",
+              "intervalPrice": "0.008459",
+              "priceType": "distribution"
+            },
+            {
+              "component": "circuitpricecurve",
+              "intervalPrice": "0.006268",
+              "priceType": "distribution"
+            },
+            {
+              "component": "mec",
+              "intervalPrice": "0.054316",
+              "priceType": "generation"
+            },
+            {
+              "component": "nbc",
+              "intervalPrice": "0.041390",
+              "priceType": "nonbypassablecharge"
+            },
+            {
+              "component": "ppf",
+              "intervalPrice": "0.019446",
+              "priceType": "generation"
+            },
+            {
+              "component": "ramp",
+              "intervalPrice": "0.000044",
+              "priceType": "generation"
+            },
+            {
+              "component": "transmissionpricecurve",
+              "intervalPrice": "0.000631",
+              "priceType": "transmission"
+            }
+          ]
+        },
+        {
+          "startIntervalTimeStamp": "2025-07-01T12:00:00-0700",
+          "intervalPrice": "0.098432",
+          "priceStatus": "Final",
+          "priceComponents": [
+            {
+              "component": "abank",
+              "intervalPrice": "0.007211",
+              "priceType": "distribution"
+            },
+            {
+              "component": "bbank",
+              "intervalPrice": "0.006543",
+              "priceType": "distribution"
+            },
+            {
+              "component": "circuitpricecurve",
+              "intervalPrice": "0.004812",
+              "priceType": "distribution"
+            },
+            {
+              "component": "mec",
+              "intervalPrice": "0.038921",
+              "priceType": "generation"
+            },
+            {
+              "component": "nbc",
+              "intervalPrice": "0.029876",
+              "priceType": "nonbypassablecharge"
+            },
+            {
+              "component": "ppf",
+              "intervalPrice": "0.010234",
+              "priceType": "generation"
+            },
+            {
+              "component": "ramp",
+              "intervalPrice": "0.000204",
+              "priceType": "generation"
+            },
+            {
+              "component": "transmissionpricecurve",
+              "intervalPrice": "0.000631",
+              "priceType": "transmission"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,14 +2,17 @@
   "Malli schemas for the raw GridX Pricing API response shape.
 
   These mirror the JSON exactly: camelCase keys, string values.
+  Covers both PG&E and SCE response formats (same structure,
+  different component/priceType vocabularies).
+
   Most consumers should use `gridx.pricing.schema` (the coerced schemas)
   instead — these are primarily useful for boundary validation.")
 
 (def PriceComponent
   [:map
-   [:component [:enum "cld" "mec" "mgcc"]]
+   [:component :string]
    [:intervalPrice :string]
-   [:priceType [:enum "generation" "distribution"]]])
+   [:priceType :string]])
 
 (def PriceDetail
   [:map
