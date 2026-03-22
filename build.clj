@@ -5,7 +5,7 @@
             [deps-deploy.deps-deploy :as dd]))
 
 (def lib 'energy.grid-coordination/clj-gridx)
-(def version "0.2.0")
+(def version "0.2.1")
 (def class-dir "target/classes")
 
 (defn test "Run all the tests." [opts]
@@ -28,7 +28,10 @@
          :src-dirs ["src"]
          :description "Clojure client library for the GridX Pricing API"
          :url "https://grid-coordination.energy"
-         :licenses [{:name "MIT" :url "https://opensource.org/licenses/MIT"}]
+         :pom-data [[:licenses
+                     [:license
+                      [:name "MIT"]
+                      [:url "https://opensource.org/licenses/MIT"]]]]
          :scm {:tag (str "v" version)
                :url "https://github.com/grid-coordination/clj-gridx"}))
 
