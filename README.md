@@ -441,7 +441,8 @@ A complete REPL session demonstrating the full workflow:
 
 ```bash
 clojure -M:nrepl
-# nREPL running on port 7888
+# nREPL server started on port XXXXX on host localhost
+# Port is written to .nrepl-port for automatic discovery
 ```
 
 ### Dev helpers
