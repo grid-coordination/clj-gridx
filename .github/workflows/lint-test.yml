@@ -24,4 +24,4 @@ jobs:
       - name: Lint
         run: clj-kondo --lint src test dev --fail-level warning
       - name: Test
-        run: clojure -M:test --focus :unit
+        run: clojure -M:test -m kaocha.runner --focus :unit
