@@ -5,3 +5,4 @@ target/
 *.pom.asc
 pom.xml
 pom.xml.asc
+.clj-kondo/.cache/

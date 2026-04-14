@@ -1,7 +1,6 @@
 (ns user
   "REPL development utilities."
-  (:require [gridx.client :as client]
-            [gridx.pge.client :as pge]
+  (:require [gridx.pge.client :as pge]
             [gridx.pge.circuits :as circuits]
             [gridx.sce.client :as sce]
             [gridx.pricing :as pricing]))
