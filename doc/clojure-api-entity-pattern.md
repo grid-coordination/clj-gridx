@@ -143,23 +143,46 @@ Preserves the offset from the API, which conveys market-local meaning (e.g., mid
 (.atZoneSameInstant offset-dt (ZoneId/of "America/Los_Angeles"))
 ```
 
-### `tick.alpha.interval` — for time periods
+### tick intervals — for time periods
 
-Use for data that represents a span of time (price intervals, delivery periods). Tick intervals are plain maps (`{:tick/beginning instant :tick/end instant}`) and enable Allen's interval algebra: `meets?`, `precedes?`, `overlaps?`, `concur`, etc.
+Use for data that represents a span of time (price intervals, delivery periods, alert windows). Any map containing `:tick/beginning` and `:tick/end` is a tick interval, enabling Allen's interval algebra: `t/relation`, `t/contains?`, `t/concur`, `t/meets?`, etc.
+
+**Assoc tick keys directly on the entity map** — don't nest them in a sub-map. This makes the entity itself a tick interval, usable without unwrapping:
 
 ```clojure
-(require '[tick.alpha.interval :as t.i])
+;; In the coercion function, after building the base map:
+(cond-> base-map
+  (and date-start time-start)
+  (assoc :tick/beginning (LocalDateTime/of date-start time-start))
 
-;; Each interval carries its own period — don't assume uniform lengths
-(defn ->interval [^Duration duration raw]
-  (let [start (parse-instant (:startTime raw))
-        end   (.plus start duration)]
-    {:my.interval/period (t.i/new-interval start end) ...}))
-
-;; Interval algebra works immediately
-(t.i/meets? (:period i1) (:period i2))    ;=> true (contiguous)
-(t.i/precedes? (:period i1) (:period i3)) ;=> true (gap between)
+  (and date-end time-end)
+  (assoc :tick/end (LocalDateTime/of date-end time-end)))
 ```
+
+The result is an entity map that doubles as a tick interval:
+
+```clojure
+{:midas.value/name "summer mid peak"
+ :midas.value/price 0.1671M
+ :midas.value/unit :midas.unit/dollar-per-kwh
+ :tick/beginning #time/date-time "2023-06-02T06:00"
+ :tick/end #time/date-time "2023-06-02T06:59:59"
+ ...}
+
+;; Interval algebra works directly on the entity
+(require '[tick.core :as t])
+(t/contains? price-interval some-instant)   ;=> true/false
+(t/relation price-interval other-interval)  ;=> :meets, :overlaps, etc.
+```
+
+**Rules for tick interval keys:**
+
+- Use `LocalDateTime` when the API provides date + time without timezone (let consumers attach timezone if needed)
+- Use `Instant` when the API provides absolute timestamps with offset/timezone
+- Only assoc `:tick/beginning` / `:tick/end` when the source fields are non-nil (use `cond->`)
+- Mark them `{:optional true}` in the Malli schema
+- Keep the original date/time fields — tick keys are additive, not replacements
+- Add `tick/tick` as a dependency (currently `{:mvn/version "1.0"}`)
 
 ### General rules
 
@@ -243,5 +266,6 @@ Most consumers only need the coerced schemas. The raw schemas are an implementat
 4. **Provide both layers**: `raw-things` for the raw data, `things` for coerced
 5. **Keep raw accessor functions** (success?, validate-raw) — the raw layer never goes away
 6. **Use Instant for time** — parse offsets/zones, store UTC
-7. **Start with plain functions** for computed values and operations
-8. **Add protocols** only when polymorphism is concretely needed
+7. **Assoc tick interval keys** (`:tick/beginning`, `:tick/end`) directly on entity maps that represent time spans
+8. **Start with plain functions** for computed values and operations
+9. **Add protocols** only when polymorphism is concretely needed
