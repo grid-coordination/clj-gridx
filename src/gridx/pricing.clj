@@ -11,7 +11,6 @@
   - `gridx.pricing.schema`     — coerced entity schemas (Component, Interval, Curve)
   - `gridx.pricing.schema.raw` — raw API response schemas"
   (:require [tick.core :as t]
-            [tick.alpha.interval :as t.i]
             [malli.core :as m]
             [gridx.pricing.schema.raw :as schema.raw])
   (:import [java.time Duration Instant OffsetDateTime]
@@ -108,7 +107,11 @@
 
   `duration` is a java.time.Duration for the interval length (from the
   curve header's intervalLengthInMinutes). Used to compute the interval's
-  end time from its start, producing a tick interval as :gridx.interval/period.
+  end time from its start.
+
+  The entity map carries :tick/beginning and :tick/end directly, making
+  it a tick interval usable with Allen's interval algebra (t/relation,
+  t/contains?, etc.) without unwrapping.
 
   Timestamps are converted to UTC Instants. Prices become BigDecimals.
   Status strings become namespaced keywords (e.g. :gridx.status/final).
@@ -117,7 +120,8 @@
   (let [components (mapv ->component (:priceComponents raw))
         start (parse-instant (:startIntervalTimeStamp raw))
         end (.plus start duration)]
-    (-> {:gridx.interval/period     (t.i/new-interval start end)
+    (-> {:tick/beginning            start
+         :tick/end                  end
          :gridx.interval/price      (parse-decimal (:intervalPrice raw))
          :gridx.interval/status     (->keyword-lower "gridx.status" (:priceStatus raw))
          :gridx.interval/components components}
@@ -128,13 +132,14 @@
 
   The curve header's start/end times are preserved as OffsetDateTimes
   (market-local context) in :gridx.curve/start and :gridx.curve/end.
-  A tick interval in UTC is also provided as :gridx.curve/period for
-  interval algebra operations.
+
+  The entity map also carries :tick/beginning and :tick/end (UTC Instants)
+  directly, making it a tick interval usable with Allen's interval algebra.
 
   Note: the API reports end time as 23:59:59 (inclusive), while tick
-  intervals are half-open [start, end). This means the curve period
-  ends 1 second before the last interval's end. This is faithful to
-  the API; we do not adjust it.
+  intervals are half-open [start, end). This means :tick/end is 1 second
+  before the last interval's computed end. This is faithful to the API;
+  we do not adjust it.
 
   Attaches the original raw map as :gridx/raw metadata."
   [raw]
@@ -149,8 +154,8 @@
          :gridx.curve/unit             (keyword (:settlementUnit header))
          :gridx.curve/start            start-odt
          :gridx.curve/end              end-odt
-         :gridx.curve/period           (t.i/new-interval (.toInstant start-odt)
-                                                         (.toInstant end-odt))
+         :tick/beginning               (.toInstant start-odt)
+         :tick/end                     (.toInstant end-odt)
          :gridx.curve/record-count     (:recordCount header)
          :gridx.curve/intervals        (mapv (partial ->interval duration) (:priceDetails raw))}
         (with-meta {:gridx/raw raw}))))

@@ -73,7 +73,8 @@ Use a consistent namespace hierarchy:
 ```clojure
 (def Interval
   [:map
-   [:gridx.interval/period [:map [:tick/beginning inst?] [:tick/end inst?]]]
+   [:tick/beginning inst?]
+   [:tick/end inst?]
    [:gridx.interval/price decimal?]
    [:gridx.interval/status [:enum :gridx.status/final :gridx.status/preliminary]]
    [:gridx.interval/components [:vector Component]]])

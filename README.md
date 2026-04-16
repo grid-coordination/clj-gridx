@@ -175,7 +175,8 @@ Idiomatic Clojure — namespaced keywords, native types, tick intervals. The sam
 | `:gridx.curve/unit` | `Keyword` | Settlement unit (e.g. `:kWh`) |
 | `:gridx.curve/start` | `OffsetDateTime` | Curve start in market-local time |
 | `:gridx.curve/end` | `OffsetDateTime` | Curve end in market-local time |
-| `:gridx.curve/period` | tick interval | Curve span as UTC `{:tick/beginning :tick/end}` |
+| `:tick/beginning` | `Instant` | Curve start as UTC Instant (tick interval key) |
+| `:tick/end` | `Instant` | Curve end as UTC Instant (tick interval key) |
 | `:gridx.curve/record-count` | `int` | Number of intervals |
 | `:gridx.curve/intervals` | `vector` | Vector of Interval maps |
 
@@ -183,7 +184,8 @@ Idiomatic Clojure — namespaced keywords, native types, tick intervals. The sam
 
 | Key | Type | Description |
 |-----|------|-------------|
-| `:gridx.interval/period` | tick interval | Time period as `{:tick/beginning :tick/end}` (UTC Instants) |
+| `:tick/beginning` | `Instant` | Interval start as UTC Instant (tick interval key) |
+| `:tick/end` | `Instant` | Interval end as UTC Instant (tick interval key) |
 | `:gridx.interval/price` | `BigDecimal` | Total interval price in currency/unit |
 | `:gridx.interval/status` | `Keyword` | `:gridx.status/final` or `:gridx.status/preliminary` |
 | `:gridx.interval/components` | `vector` | Vector of Component maps |
@@ -225,28 +227,25 @@ The library **never assumes a timezone**. Offsets cannot be converted to zone ID
 
 ## Tick Intervals
 
-Price intervals are represented as [tick](https://github.com/juxt/tick) intervals, enabling Allen's interval algebra:
+Both Curve and Interval entities carry `:tick/beginning` and `:tick/end` directly, making them [tick](https://github.com/juxt/tick) intervals usable with Allen's interval algebra:
 
 ```clojure
-(require '[tick.core :as t]
-         '[tick.alpha.interval :as t.i])
+(require '[tick.core :as t])
 
 (let [intervals (:gridx.curve/intervals (first curves))
-      i1 (:gridx.interval/period (nth intervals 0))
-      i2 (:gridx.interval/period (nth intervals 1))
-      i3 (:gridx.interval/period (nth intervals 2))]
+      i1 (nth intervals 0)
+      i2 (nth intervals 1)
+      i3 (nth intervals 2)]
 
-  (t.i/meets? i1 i2)      ;=> true  (contiguous: i1 end = i2 start)
-  (t.i/precedes? i1 i3)   ;=> true  (i1 comes before i3 with gap)
-  (t.i/overlaps? i1 i2)   ;=> false (no overlap)
-  (t.i/relation i1 i2)    ;=> :meets
+  (t/relation i1 i2)      ;=> :meets
+  (t/relation i1 i3)      ;=> :precedes
 
-  ;; Access interval boundaries
-  (t/beginning i1)         ;=> #time/instant "2026-03-08T08:00:00Z"
-  (t/end i1))              ;=> #time/instant "2026-03-08T09:00:00Z"
+  ;; Access interval boundaries directly
+  (:tick/beginning i1)     ;=> #time/instant "2026-03-08T08:00:00Z"
+  (:tick/end i1))          ;=> #time/instant "2026-03-08T09:00:00Z"
 ```
 
-> **Note on curve period vs intervals:** The GridX API reports curve end time as `23:59:59` (inclusive convention), while tick intervals are half-open `[start, end)`. This means the curve's `:gridx.curve/period` ends 1 second before the last interval's computed end time. The library preserves the API's value faithfully and does not adjust for this difference.
+> **Note on curve tick/end:** The GridX API reports curve end time as `23:59:59` (inclusive convention), while tick intervals are half-open `[start, end)`. This means the curve's `:tick/end` is 1 second before the last interval's computed end time. The library preserves the API's value faithfully and does not adjust for this difference.
 
 ## Metadata
 
@@ -421,14 +420,13 @@ A complete REPL session demonstrating the full workflow:
 (->> (:gridx.curve/intervals (first pge-curves))
      (filter #(neg? (:gridx.interval/price %)))
      (mapv (fn [i]
-             {:begin (t/beginning (:gridx.interval/period i))
+             {:begin (:tick/beginning i)
               :price (:gridx.interval/price i)})))
 
-;; Interval algebra
+;; Interval algebra — entities are tick intervals directly
 (let [intervals (:gridx.curve/intervals (first pge-curves))]
-  (t.i/meets? (:gridx.interval/period (nth intervals 0))
-              (:gridx.interval/period (nth intervals 1))))
-;=> true
+  (t/relation (nth intervals 0) (nth intervals 1)))
+;=> :meets
 
 ;; Access raw API data from any coerced entity
 (-> (first pge-curves) meta :gridx/raw :priceHeader :priceCurveName)

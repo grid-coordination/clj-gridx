@@ -15,9 +15,8 @@
 
 (def Interval
   [:map
-   [:gridx.interval/period [:map
-                            [:tick/beginning inst?]
-                            [:tick/end inst?]]]
+   [:tick/beginning inst?]
+   [:tick/end inst?]
    [:gridx.interval/price decimal?]
    [:gridx.interval/status [:enum :gridx.status/final
                             :gridx.status/preliminary]]
@@ -32,6 +31,7 @@
    [:gridx.curve/unit :keyword]
    [:gridx.curve/start [:fn (fn [x] (instance? OffsetDateTime x))]]
    [:gridx.curve/end [:fn (fn [x] (instance? OffsetDateTime x))]]
-   [:gridx.curve/period [:map [:tick/beginning inst?] [:tick/end inst?]]]
+   [:tick/beginning inst?]
+   [:tick/end inst?]
    [:gridx.curve/record-count :int]
    [:gridx.curve/intervals [:vector Interval]]])
