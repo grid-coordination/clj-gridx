@@ -1,6 +1,8 @@
 # clj-gridx
 
 [![Clojars Project](https://img.shields.io/clojars/v/energy.grid-coordination/clj-gridx.svg)](https://clojars.org/energy.grid-coordination/clj-gridx)
+[![md-docs](https://img.shields.io/badge/md--docs-included-green)](https://github.com/dcj/codox-md)
+[![build-provenance](https://img.shields.io/badge/build--provenance-included-blue)](https://github.com/dcj/build-provenance)
 
 A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), providing access to marginal cost pricing data for California utilities (PG&E and SCE). Built on a [non-official OpenAPI spec](https://github.com/grid-coordination/gridx-api-specs#disclaimer) derived from GridX's public developer docs.
 
