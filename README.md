@@ -20,7 +20,7 @@ A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), 
 Add to your `deps.edn`:
 
 ```clojure
-{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.2.0"}}}
+{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.3.1"}}}
 ```
 
 ## Quick Start
