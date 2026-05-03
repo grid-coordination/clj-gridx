@@ -469,6 +469,14 @@ clojure -M:test-integration
 
 Unit tests validate schema conformance and coercion logic against sample response files. Integration tests hit the live stage API and verify response structure, component names/counts, type coercion, and metadata preservation for both PG&E and SCE — without asserting specific price values.
 
+## Contributing
+
+Issues, Discussions, and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow (and the dev commands: tests, integration tests, lint, nREPL). In short:
+
+- **Questions, API/design discussion, GridX behavior gaps** → [Discussions](https://github.com/grid-coordination/clj-gridx/discussions)
+- **Confirmed bugs, coercion/schema fixes, doc errors** → [Issues](https://github.com/grid-coordination/clj-gridx/issues)
+- **Patches** → pull requests; please open a Discussion or Issue first for non-trivial changes (new utility support, new endpoints, new schema fields, new coercion behavior)
+
 ## License
 
 [MIT License](LICENSE) — Copyright (c) 2026 Clark Communications Corporation
