@@ -33,10 +33,25 @@
   "Parse a GridX timestamp string (e.g. '2026-03-08T00:00:00-0800') into a
   `ZonedDateTime` in `zone`. The offset embedded in the string fixes the
   instant; `.atZoneSameInstant` re-expresses that instant in `zone`,
-  yielding a value that knows the zone's DST rules."
+  yielding a value that knows the zone's DST rules.
+
+  Sanity check: the wire offset must match what `zone` produces at that
+  instant. A mismatch indicates a misconfigured `:zone` on the client
+  (e.g. `Asia/Tokyo` configured against a Pacific-serving API) — throw
+  early with the wire string, wire offset, configured zone, and the
+  offset that zone would produce, so the user can see the discrepancy."
   ^ZonedDateTime [^String s ^ZoneId zone]
-  (-> (OffsetDateTime/parse s gridx-timestamp-formatter)
-      (.atZoneSameInstant zone)))
+  (let [odt          (OffsetDateTime/parse s gridx-timestamp-formatter)
+        wire-offset  (.getOffset odt)
+        instant      (.toInstant odt)
+        zone-offset  (.. zone getRules (getOffset instant))]
+    (when-not (.equals wire-offset zone-offset)
+      (throw (ex-info "GridX wire offset does not match the configured :zone at this instant — check the client's :zone configuration"
+                      {:wire-string s
+                       :wire-offset (str wire-offset)
+                       :zone        (str zone)
+                       :zone-offset (str zone-offset)})))
+    (.atZoneSameInstant odt zone)))
 
 (defn- parse-decimal
   "Parse a decimal string into a BigDecimal."

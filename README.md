@@ -21,7 +21,7 @@ A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), 
 Add to your `deps.edn`:
 
 ```clojure
-{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.4.0"}}}
+{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.4.1"}}}
 ```
 
 ## Quick Start
@@ -244,7 +244,18 @@ Because the coerced values are `ZonedDateTime` in a real zone, DST transitions a
 - On **spring-forward** day, the wall clock skips from 02:00 PST to 03:00 PDT. An interval at 01:00 PST keeps the `-08:00` offset; the next interval at 03:00 PDT comes back with `-07:00`. Adding a 1-hour `Duration` to the 01:00 PST `ZonedDateTime` produces a value that is the same instant as 03:00 PDT — i.e. it crosses the gap correctly.
 - On **fall-back** day, the wall clock repeats the 01:00 hour. The API serializes each repeated hour with its own offset (`-07:00` for the first pass, `-08:00` for the second), and the parser preserves that distinction.
 
-The interval count returned by the API on a DST day reflects upstream behavior — typically 23 intervals on a spring-forward day and 25 on a fall-back day for hourly data, since wall-clock-aligned intervals match physical hours minus or plus one across the transition. This library does not synthesize or drop intervals; it coerces what the API returns.
+Verified against the live PG&E stage API for hourly intervals:
+
+| Transition day | Direction | Hourly intervals returned | Offsets present |
+|---|---|---|---|
+| 2026-03-08 | Spring-forward (PST → PDT) | 23 | `-08:00`, `-07:00` |
+| 2025-11-02 | Fall-back (PDT → PST) | 25 | `-07:00`, `-08:00` |
+
+This library does not synthesize or drop intervals; it coerces what the API returns. (See `pge-live-dst-spring-forward-test` and `pge-live-dst-fall-back-test` in the integration test suite for the running assertions.)
+
+### Zone misconfiguration
+
+If you create a client with a `:zone` whose offset doesn't match what the API serializes for a given timestamp, the parser throws `ExceptionInfo` early with the wire string, wire offset, configured zone, and the offset that zone would produce — so a misconfigured `:zone` (e.g. `Asia/Tokyo` configured against a Pacific-serving API) surfaces immediately rather than silently re-zoning the wall clock.
 
 ## Tick Intervals
 

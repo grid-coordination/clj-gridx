@@ -99,6 +99,31 @@
           curves   (pricing/curves response "America/Los_Angeles")]
       (is (= la-zone (.getZone ^ZonedDateTime (:gridx.curve/start (first curves))))))))
 
+(deftest zone-mismatch-throws-test
+  (testing "Parser throws when wire offset doesn't match configured zone"
+    ;; A Pacific-serving API timestamp parsed against America/New_York: at
+    ;; 2025-07-01T00:00 PDT (-0700), New York is on EDT (-0400), so the
+    ;; wire offset would not match the zone's offset at that instant.
+    (let [body {:meta {:code 200 :requestURL "" :requestBody "" :response ""}
+                :data [{:priceHeader {:priceCurveName "MISMATCH"
+                                      :marketName "CAISO-DAM"
+                                      :intervalLengthInMinutes 60
+                                      :settlementCurrency "USD"
+                                      :settlementUnit "kWh"
+                                      :startTime "2025-07-01T00:00:00-0700"
+                                      :endTime "2025-07-01T23:59:59-0700"
+                                      :recordCount 1}
+                        :priceDetails [{:startIntervalTimeStamp "2025-07-01T00:00:00-0700"
+                                        :intervalPrice "0.10"
+                                        :priceStatus "Final"
+                                        :priceComponents [{:component "cld"
+                                                           :intervalPrice "0.01"
+                                                           :priceType "distribution"}]}]}]}
+          response {:status 200 :body body :gridx/zone (ZoneId/of "America/New_York")}]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"wire offset does not match"
+                            (pricing/curves response))))))
+
 (deftest dst-spring-forward-coercion-test
   (testing "Spring-forward day: parser places intervals in PST and PDT correctly"
     ;; 2025-03-09 is the US spring-forward day; 02:00 PST does not exist —

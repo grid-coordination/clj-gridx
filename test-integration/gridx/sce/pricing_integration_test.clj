@@ -5,11 +5,9 @@
   Run with: clojure -M:test-integration"
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [gridx.sce.client :as sce]
-            [gridx.client :as client]
             [gridx.pricing :as pricing]
             [gridx.pricing.schema :as schema]
-            [malli.core :as m]
-            [tick.core :as t]))
+            [malli.core :as m]))
 
 (def ^:dynamic *client* nil)
 

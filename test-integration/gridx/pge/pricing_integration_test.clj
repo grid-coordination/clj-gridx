@@ -5,11 +5,11 @@
   Run with: clojure -M:test-integration"
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [gridx.pge.client :as pge]
-            [gridx.client :as client]
             [gridx.pricing :as pricing]
             [gridx.pricing.schema :as schema]
             [malli.core :as m]
-            [tick.core :as t]))
+            [tick.core :as t])
+  (:import [java.time ZoneOffset]))
 
 (def ^:dynamic *client* nil)
 
@@ -108,3 +108,48 @@
       (is (pricing/success? resp))
       (let [curves (pricing/curves resp)]
         (is (<= 2 (count curves)))))))
+
+(defn- offsets-on-day [intervals]
+  (->> intervals
+       (map (comp #(.getOffset %) :tick/beginning))
+       set))
+
+(deftest pge-live-dst-fall-back-test
+  (testing "PG&E live API on PT fall-back day (2025-11-02): 25 hourly intervals,
+            offsets straddle PDT (-07:00) and PST (-08:00)"
+    (let [resp (pge/get-pricing *client*
+                                {:startdate "20251102"
+                                 :enddate "20251102"
+                                 :ratename "EELEC"
+                                 :representativeCircuitId "013532223"})]
+      (is (pricing/success? resp))
+      (let [curve (first (pricing/curves resp))
+            intervals (:gridx.curve/intervals curve)
+            len (:gridx.curve/interval-minutes curve)]
+        (is (= 60 len) "this assertion is built on hourly intervals")
+        (is (= 25 (count intervals))
+            "fall-back day repeats the 01:00 hour ⇒ 25 hourly intervals")
+        (is (= #{(ZoneOffset/ofHours -7) (ZoneOffset/ofHours -8)}
+               (offsets-on-day intervals))
+            "fall-back day spans PDT (-07:00) and PST (-08:00)")
+        (is (m/validate schema/Curve curve))))))
+
+(deftest pge-live-dst-spring-forward-test
+  (testing "PG&E live API on PT spring-forward day (2026-03-08): 23 hourly intervals,
+            offsets straddle PST (-08:00) and PDT (-07:00)"
+    (let [resp (pge/get-pricing *client*
+                                {:startdate "20260308"
+                                 :enddate "20260308"
+                                 :ratename "EELEC"
+                                 :representativeCircuitId "013532223"})]
+      (is (pricing/success? resp))
+      (let [curve (first (pricing/curves resp))
+            intervals (:gridx.curve/intervals curve)
+            len (:gridx.curve/interval-minutes curve)]
+        (is (= 60 len) "this assertion is built on hourly intervals")
+        (is (= 23 (count intervals))
+            "spring-forward day skips the 02:00 hour ⇒ 23 hourly intervals")
+        (is (= #{(ZoneOffset/ofHours -8) (ZoneOffset/ofHours -7)}
+               (offsets-on-day intervals))
+            "spring-forward day spans PST (-08:00) and PDT (-07:00)")
+        (is (m/validate schema/Curve curve))))))
