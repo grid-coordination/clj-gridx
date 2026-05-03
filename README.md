@@ -10,7 +10,8 @@ A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), 
 
 - **Multi-utility support**: PG&E and SCE via parallel `gridx.pge.client` and `gridx.sce.client` namespaces
 - **Spec-driven HTTP client** built on [Martian](https://github.com/oliyh/martian) with bundled OpenAPI specs as the single source of truth
-- **Two-layer data model**: raw API responses (camelCase, strings) and coerced Clojure entities (namespaced keywords, BigDecimals, Instants)
+- **Two-layer data model**: raw API responses (camelCase, strings) and coerced Clojure entities (namespaced keywords, BigDecimals, ZonedDateTimes)
+- **Per-instance `:zone`** — every coerced timestamp is a `ZonedDateTime` in the configured `ZoneId`, with DST-aware behavior across spring-forward / fall-back days
 - **tick intervals** for time periods, enabling [Allen's interval algebra](https://en.wikipedia.org/wiki/Allen%27s_interval_algebra) out of the box
 - **Metadata preservation**: every coerced entity carries the original API data as `:gridx/raw` metadata
 - **Malli schemas** for both raw and coerced data layers
@@ -20,7 +21,7 @@ A Clojure client library for the [GridX Pricing API](https://pe-api.gridx.com), 
 Add to your `deps.edn`:
 
 ```clojure
-{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.3.1"}}}
+{:deps {energy.grid-coordination/clj-gridx {:mvn/version "0.4.0"}}}
 ```
 
 ## Quick Start
@@ -31,11 +32,12 @@ Add to your `deps.edn`:
 (require '[gridx.pge.client :as pge]
          '[gridx.pricing :as pricing])
 
-;; Create a PG&E client (defaults to stage API)
+;; Create a PG&E client (defaults to stage API + America/Los_Angeles zone)
 (def c (pge/create-client))
 
-;; Or target production
-(def c (pge/create-client {:url pge/production-url}))
+;; Or target production / override the zone
+(def c (pge/create-client {:url  pge/production-url
+                           :zone "America/Los_Angeles"}))
 
 ;; Fetch pricing data — utility/market/program are filled in automatically
 (def resp (pge/get-pricing c
@@ -45,7 +47,7 @@ Add to your `deps.edn`:
              :representativeCircuitId "013532223"}))
 
 (pricing/success? resp)  ;=> true
-(pricing/curves resp)    ;=> vector of coerced Curve maps
+(pricing/curves resp)    ;=> vector of coerced Curve maps (ZonedDateTimes in client zone)
 ```
 
 ### SCE
@@ -54,7 +56,7 @@ Add to your `deps.edn`:
 (require '[gridx.sce.client :as sce]
          '[gridx.pricing :as pricing])
 
-;; Create an SCE client (defaults to stage API)
+;; Create an SCE client (defaults to stage API + America/Los_Angeles zone)
 (def c (sce/create-client))
 
 ;; Fetch pricing data
@@ -65,7 +67,7 @@ Add to your `deps.edn`:
              :representativeCircuitId "System"}))
 
 (pricing/success? resp)  ;=> true
-(pricing/curves resp)    ;=> vector of coerced Curve maps
+(pricing/curves resp)    ;=> vector of coerced Curve maps (ZonedDateTimes in client zone)
 ```
 
 ### Shared Client
@@ -75,11 +77,14 @@ The utility-specific namespaces wrap the shared `gridx.client` namespace, which 
 ```clojure
 (require '[gridx.client :as client])
 
-(def c (client/create-client {:url "https://pge-pe-api.gridx.com/stage/v1"
-                               :spec-path "gridx-pricing-spec/pge/openapi.yaml"}))
+(def c (client/create-client {:url       "https://pge-pe-api.gridx.com/stage/v1"
+                              :spec-path "gridx-pricing-spec/pge/openapi.yaml"
+                              :zone      "America/Los_Angeles"}))
 
 (client/get-pricing c {:utility "PGE" :market "DAM" :program "CalFUSE" ...})
 ```
+
+`:zone` is required by the shared `create-client` (the per-utility wrappers default it to `America/Los_Angeles` for you). It accepts a `java.time.ZoneId` or a zone-id string, and it flows from the client onto each response (as `:gridx/zone`) where the coercion layer reads it.
 
 ## Utility Differences
 
@@ -149,7 +154,7 @@ Direct from the JSON — camelCase keys, string values. Useful for debugging or 
 
 ### Coerced Layer
 
-Idiomatic Clojure — namespaced keywords, native types, tick intervals. The same shape for both PG&E and SCE.
+Idiomatic Clojure — namespaced keywords, native types, tick intervals. The same shape for both PG&E and SCE. All timestamps are `ZonedDateTime` values in the client's configured `:zone`.
 
 ```clojure
 (first (pricing/curves resp))
@@ -158,10 +163,10 @@ Idiomatic Clojure — namespaced keywords, native types, tick intervals. The sam
 ;                  :interval-minutes 60
 ;                  :currency :USD
 ;                  :unit :kWh
-;                  :start #time/offset-date-time "2026-03-08T00:00-08:00"
-;                  :end #time/offset-date-time "2026-03-08T23:59:59-07:00"
-;                  :period #:tick{:beginning #time/instant "2026-03-08T08:00:00Z"
-;                                 :end #time/instant "2026-03-09T06:59:59Z"}
+;                  :start #time/zoned-date-time "2026-03-08T00:00-08:00[America/Los_Angeles]"
+;                  :end   #time/zoned-date-time "2026-03-08T23:59:59-07:00[America/Los_Angeles]"
+;                  :period #:tick{:beginning #time/zoned-date-time "2026-03-08T00:00-08:00[America/Los_Angeles]"
+;                                 :end       #time/zoned-date-time "2026-03-08T23:59:59-07:00[America/Los_Angeles]"}
 ;                  :record-count 23
 ;                  :intervals [...]}
 ```
@@ -175,10 +180,10 @@ Idiomatic Clojure — namespaced keywords, native types, tick intervals. The sam
 | `:gridx.curve/interval-minutes` | `int` | Interval length: 15 or 60 |
 | `:gridx.curve/currency` | `Keyword` | Settlement currency (e.g. `:USD`) |
 | `:gridx.curve/unit` | `Keyword` | Settlement unit (e.g. `:kWh`) |
-| `:gridx.curve/start` | `OffsetDateTime` | Curve start in market-local time |
-| `:gridx.curve/end` | `OffsetDateTime` | Curve end in market-local time |
-| `:tick/beginning` | `Instant` | Curve start as UTC Instant (tick interval key) |
-| `:tick/end` | `Instant` | Curve end as UTC Instant (tick interval key) |
+| `:gridx.curve/start` | `ZonedDateTime` | Curve start in the configured `:zone` |
+| `:gridx.curve/end` | `ZonedDateTime` | Curve end in the configured `:zone` |
+| `:tick/beginning` | `ZonedDateTime` | Curve start (tick interval key, same value as `:gridx.curve/start`) |
+| `:tick/end` | `ZonedDateTime` | Curve end (tick interval key, same value as `:gridx.curve/end`) |
 | `:gridx.curve/record-count` | `int` | Number of intervals |
 | `:gridx.curve/intervals` | `vector` | Vector of Interval maps |
 
@@ -186,8 +191,8 @@ Idiomatic Clojure — namespaced keywords, native types, tick intervals. The sam
 
 | Key | Type | Description |
 |-----|------|-------------|
-| `:tick/beginning` | `Instant` | Interval start as UTC Instant (tick interval key) |
-| `:tick/end` | `Instant` | Interval end as UTC Instant (tick interval key) |
+| `:tick/beginning` | `ZonedDateTime` | Interval start in the configured `:zone` |
+| `:tick/end` | `ZonedDateTime` | Interval end in the configured `:zone` (start + interval length) |
 | `:gridx.interval/price` | `BigDecimal` | Total interval price in currency/unit |
 | `:gridx.interval/status` | `Keyword` | `:gridx.status/final` or `:gridx.status/preliminary` |
 | `:gridx.interval/components` | `vector` | Vector of Component maps |
@@ -206,26 +211,40 @@ Idiomatic Clojure — namespaced keywords, native types, tick intervals. The sam
 
 ### Type Coercion Summary
 
-| Raw (API) | Coerced (Clojure) | Example |
+| Raw (API) | Coerced (Clojure) | Example (zone = America/Los_Angeles) |
 |-----------|-------------------|---------|
-| Timestamp string | `java.time.Instant` (UTC) | `"2026-03-08T00:00:00-0800"` → `#time/instant "2026-03-08T08:00:00Z"` |
-| Timestamp string (curve bounds) | `java.time.OffsetDateTime` | `"2026-03-08T00:00:00-0800"` → `#time/offset-date-time "2026-03-08T00:00-08:00"` |
+| Timestamp string | `java.time.ZonedDateTime` in client `:zone` | `"2026-03-08T00:00:00-0800"` → `#time/zoned-date-time "2026-03-08T00:00-08:00[America/Los_Angeles]"` |
 | Decimal string | `BigDecimal` | `"0.032176"` → `0.032176M` |
 | Enum string | Namespaced keyword | `"Final"` → `:gridx.status/final` |
 
 ## Time Handling
 
-Time representation is chosen by semantics:
-
-- **Interval timestamps** use `Instant` (UTC) — these are point-in-time price observations that must be globally unambiguous
-- **Curve start/end** use `OffsetDateTime` — these represent calendar boundaries in the market's local time. The offset conveys market context (e.g., `-08:00` PST vs `-07:00` PDT)
-
-The library **never assumes a timezone**. Offsets cannot be converted to zone IDs without external knowledge (`-08:00` could be US/Pacific, US/Alaska, etc.). If you know the zone, convert explicitly:
+Every coerced timestamp is a `java.time.ZonedDateTime` in the `:zone` configured on the client. The parser reads the API's offset (e.g. `-0800`), uses it to fix the underlying instant, and then `.atZoneSameInstant`s into the configured zone — so the wall-clock time the API meant is preserved while the value gains the zone's DST rules for any subsequent arithmetic.
 
 ```clojure
-(.atZoneSameInstant (:gridx.curve/start curve)
-                    (java.time.ZoneId/of "America/Los_Angeles"))
+;; Default for the per-utility wrappers:
+(pge/create-client)                                ;; :zone defaults to America/Los_Angeles
+(sce/create-client {:zone "America/Los_Angeles"})  ;; explicit, same default
+
+;; The shared client requires :zone:
+(client/create-client {:url "..." :spec-path "..." :zone "UTC"})
 ```
+
+The zone flows from the client onto each response (as `:gridx/zone`) where `pricing/curves` reads it. You can also pass a zone explicitly to bypass that flow — useful for re-coercing a hand-built response or for tests:
+
+```clojure
+(pricing/curves resp)                          ;; uses (:gridx/zone resp)
+(pricing/curves resp "America/Los_Angeles")    ;; explicit override
+```
+
+### Daylight Saving Time
+
+Because the coerced values are `ZonedDateTime` in a real zone, DST transitions are handled correctly:
+
+- On **spring-forward** day, the wall clock skips from 02:00 PST to 03:00 PDT. An interval at 01:00 PST keeps the `-08:00` offset; the next interval at 03:00 PDT comes back with `-07:00`. Adding a 1-hour `Duration` to the 01:00 PST `ZonedDateTime` produces a value that is the same instant as 03:00 PDT — i.e. it crosses the gap correctly.
+- On **fall-back** day, the wall clock repeats the 01:00 hour. The API serializes each repeated hour with its own offset (`-07:00` for the first pass, `-08:00` for the second), and the parser preserves that distinction.
+
+The interval count returned by the API on a DST day reflects upstream behavior — typically 23 intervals on a spring-forward day and 25 on a fall-back day for hourly data, since wall-clock-aligned intervals match physical hours minus or plus one across the transition. This library does not synthesize or drop intervals; it coerces what the API returns.
 
 ## Tick Intervals
 
@@ -243,8 +262,8 @@ Both Curve and Interval entities carry `:tick/beginning` and `:tick/end` directl
   (t/relation i1 i3)      ;=> :precedes
 
   ;; Access interval boundaries directly
-  (:tick/beginning i1)     ;=> #time/instant "2026-03-08T08:00:00Z"
-  (:tick/end i1))          ;=> #time/instant "2026-03-08T09:00:00Z"
+  (:tick/beginning i1)     ;=> #time/zoned-date-time "2026-03-08T00:00-08:00[America/Los_Angeles]"
+  (:tick/end i1))          ;=> #time/zoned-date-time "2026-03-08T01:00-08:00[America/Los_Angeles]"
 ```
 
 > **Note on curve tick/end:** The GridX API reports curve end time as `23:59:59` (inclusive convention), while tick intervals are half-open `[start, end)`. This means the curve's `:tick/end` is 1 second before the last interval's computed end time. The library preserves the API's value faithfully and does not adjust for this difference.

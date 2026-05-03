@@ -3,9 +3,15 @@
 
   Two layers:
   - Raw: camelCase keys, string values — direct from the API JSON.
-  - Coerced: namespaced keywords, BigDecimals, OffsetDateTimes — Clojure-friendly.
+  - Coerced: namespaced keywords, BigDecimals, ZonedDateTimes — Clojure-friendly.
 
   The coerced layer preserves raw data as metadata via :gridx/raw.
+
+  Time handling: every coerced timestamp is a `ZonedDateTime` in the
+  zone configured on the client (per-instance via `:zone`). The parser
+  reads the API's offset, then `.atZoneSameInstant`s into the configured
+  zone — so wall-clock times stay consistent with what the API meant
+  while gaining DST-aware behavior when arithmetic crosses transitions.
 
   Schemas are in separate namespaces for consumer use:
   - `gridx.pricing.schema`     — coerced entity schemas (Component, Interval, Curve)
@@ -13,7 +19,7 @@
   (:require [tick.core :as t]
             [malli.core :as m]
             [gridx.pricing.schema.raw :as schema.raw])
-  (:import [java.time Duration Instant OffsetDateTime]
+  (:import [java.time Duration OffsetDateTime ZoneId ZonedDateTime]
            [java.time.format DateTimeFormatter]))
 
 ;; ---------------------------------------------------------------------------
@@ -23,17 +29,14 @@
 (def ^:private ^DateTimeFormatter gridx-timestamp-formatter
   (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ssZ"))
 
-(defn- parse-offset-datetime
-  "Parse a GridX timestamp string (e.g. '2026-03-08T00:00:00-0800')
-  into an OffsetDateTime, preserving the original offset."
-  ^OffsetDateTime [^String s]
-  (OffsetDateTime/parse s gridx-timestamp-formatter))
-
-(defn- parse-instant
-  "Parse a GridX timestamp string into a UTC Instant.
-  The offset is used for conversion then discarded."
-  ^Instant [^String s]
-  (.toInstant (parse-offset-datetime s)))
+(defn- parse-zoned-datetime
+  "Parse a GridX timestamp string (e.g. '2026-03-08T00:00:00-0800') into a
+  `ZonedDateTime` in `zone`. The offset embedded in the string fixes the
+  instant; `.atZoneSameInstant` re-expresses that instant in `zone`,
+  yielding a value that knows the zone's DST rules."
+  ^ZonedDateTime [^String s ^ZoneId zone]
+  (-> (OffsetDateTime/parse s gridx-timestamp-formatter)
+      (.atZoneSameInstant zone)))
 
 (defn- parse-decimal
   "Parse a decimal string into a BigDecimal."
@@ -107,18 +110,18 @@
 
   `duration` is a java.time.Duration for the interval length (from the
   curve header's intervalLengthInMinutes). Used to compute the interval's
-  end time from its start.
+  end time from its start. `zone` is the `ZoneId` to express timestamps in.
 
-  The entity map carries :tick/beginning and :tick/end directly, making
-  it a tick interval usable with Allen's interval algebra (t/relation,
-  t/contains?, etc.) without unwrapping.
+  The entity map carries :tick/beginning and :tick/end directly (as
+  ZonedDateTimes), making it a tick interval usable with Allen's interval
+  algebra (t/relation, t/contains?, etc.) without unwrapping.
 
-  Timestamps are converted to UTC Instants. Prices become BigDecimals.
-  Status strings become namespaced keywords (e.g. :gridx.status/final).
-  Attaches the original raw map as :gridx/raw metadata."
-  [^Duration duration raw]
+  Prices become BigDecimals. Status strings become namespaced keywords
+  (e.g. :gridx.status/final). Attaches the original raw map as :gridx/raw
+  metadata."
+  [^Duration duration ^ZoneId zone raw]
   (let [components (mapv ->component (:priceComponents raw))
-        start (parse-instant (:startIntervalTimeStamp raw))
+        start (parse-zoned-datetime (:startIntervalTimeStamp raw) zone)
         end (.plus start duration)]
     (-> {:tick/beginning            start
          :tick/end                  end
@@ -130,11 +133,14 @@
 (defn ->curve
   "Coerce a raw price curve map into a namespaced Curve.
 
-  The curve header's start/end times are preserved as OffsetDateTimes
-  (market-local context) in :gridx.curve/start and :gridx.curve/end.
+  `zone` is the `ZoneId` to express timestamps in. The curve header's
+  start/end times are parsed using the API's offset and re-expressed in
+  `zone` as ZonedDateTimes — preserving the wall-clock time the API meant
+  while gaining DST-aware behavior.
 
-  The entity map also carries :tick/beginning and :tick/end (UTC Instants)
-  directly, making it a tick interval usable with Allen's interval algebra.
+  The entity map carries :gridx.curve/start, :gridx.curve/end,
+  :tick/beginning, and :tick/end as ZonedDateTimes (the tick keys make
+  the curve usable with Allen's interval algebra directly).
 
   Note: the API reports end time as 23:59:59 (inclusive), while tick
   intervals are half-open [start, end). This means :tick/end is 1 second
@@ -142,22 +148,23 @@
   we do not adjust it.
 
   Attaches the original raw map as :gridx/raw metadata."
-  [raw]
+  [^ZoneId zone raw]
   (let [header (:priceHeader raw)
         duration (Duration/ofMinutes (:intervalLengthInMinutes header))
-        start-odt (parse-offset-datetime (:startTime header))
-        end-odt   (parse-offset-datetime (:endTime header))]
+        start (parse-zoned-datetime (:startTime header) zone)
+        end   (parse-zoned-datetime (:endTime header) zone)]
     (-> {:gridx.curve/name             (:priceCurveName header)
          :gridx.curve/market           (->keyword-lower "gridx.market" (:marketName header))
          :gridx.curve/interval-minutes (:intervalLengthInMinutes header)
          :gridx.curve/currency         (keyword (:settlementCurrency header))
          :gridx.curve/unit             (keyword (:settlementUnit header))
-         :gridx.curve/start            start-odt
-         :gridx.curve/end              end-odt
-         :tick/beginning               (.toInstant start-odt)
-         :tick/end                     (.toInstant end-odt)
+         :gridx.curve/start            start
+         :gridx.curve/end              end
+         :tick/beginning               start
+         :tick/end                     end
          :gridx.curve/record-count     (:recordCount header)
-         :gridx.curve/intervals        (mapv (partial ->interval duration) (:priceDetails raw))}
+         :gridx.curve/intervals        (mapv (partial ->interval duration zone)
+                                             (:priceDetails raw))}
         (with-meta {:gridx/raw raw}))))
 
 (defn curves
@@ -165,9 +172,21 @@
 
   This is the main entry point for the coerced layer. Returns a vector
   of Curve maps with namespaced keywords, native types (BigDecimal,
-  Instant, OffsetDateTime), and tick intervals. Each entity at every
-  level carries :gridx/raw metadata with the original API data.
+  ZonedDateTime), and tick intervals. Each entity at every level carries
+  :gridx/raw metadata with the original API data.
+
+  The 1-arity form reads the zone from `(:gridx/zone response)`, which
+  `gridx.client/get-pricing` attaches automatically. The 2-arity form
+  takes an explicit `ZoneId`, useful when coercing a hand-built response
+  (e.g. in tests) or when overriding the client's configured zone.
 
   See `raw-curves` for the uncoerced version."
-  [response]
-  (mapv ->curve (raw-curves response)))
+  ([response]
+   (let [zone (:gridx/zone response)]
+     (when-not zone
+       (throw (ex-info "Response is missing :gridx/zone — pass zone explicitly via (curves response zone), or fetch through a client created with :zone"
+                       {:response-keys (keys response)})))
+     (curves response zone)))
+  ([response zone]
+   (let [zone-id (if (instance? ZoneId zone) zone (ZoneId/of (str zone)))]
+     (mapv (partial ->curve zone-id) (raw-curves response)))))
